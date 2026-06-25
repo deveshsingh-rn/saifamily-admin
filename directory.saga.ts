@@ -6,6 +6,7 @@ import {
   updateDirectoryCategory,
   deleteDirectoryCategory,
 } from '@/services/directoryCategories.api';
+import { getDirectoryReviews, updateDirectoryReviewStatus, restoreDirectoryReview } from '@/services/directoryReviews.api';
 import {
   fetchDirectoryCategoriesStart,
   fetchDirectoryCategoriesSuccess,
@@ -19,9 +20,18 @@ import {
   deleteDirectoryCategoryStart,
   deleteDirectoryCategorySuccess,
   deleteDirectoryCategoryFailure,
+  fetchDirectoryReviewsStart,
+  fetchDirectoryReviewsSuccess,
+  fetchDirectoryReviewsFailure,
+  updateDirectoryReviewStatusStart,
+  restoreDirectoryReviewStart,
+  updateDirectoryReviewStatusSuccess,
+  updateDirectoryReviewStatusFailure,
   UpdateActionPayload,
+  UpdateReviewStatusActionPayload,
 } from './directory.slice';
 import { DirectoryCategory, CreateDirectoryCategoryPayload } from '@/types/directoryCategory';
+import { DirectoryReview, DirectoryReviewStatus } from '@/types/directoryReview';
 
 function* fetchDirectoryCategoriesSaga(): Generator {
   try {
@@ -61,11 +71,43 @@ function* deleteDirectoryCategorySaga(action: PayloadAction<string>): Generator 
   }
 }
 
+function* fetchDirectoryReviewsSaga(action: PayloadAction<DirectoryReviewStatus | undefined>): Generator {
+  try {
+    const reviews = (yield call(getDirectoryReviews, action.payload)) as DirectoryReview[];
+    yield put(fetchDirectoryReviewsSuccess(reviews));
+  } catch (error: any) {
+    yield put(fetchDirectoryReviewsFailure(error.message));
+  }
+}
+
+function* updateDirectoryReviewStatusSaga(action: PayloadAction<UpdateReviewStatusActionPayload>): Generator {
+  try {
+    const { reviewId, status } = action.payload;
+    const updatedReview = (yield call(updateDirectoryReviewStatus, reviewId, status)) as DirectoryReview;
+    yield put(updateDirectoryReviewStatusSuccess(updatedReview));
+  } catch (error: any) {
+    yield put(updateDirectoryReviewStatusFailure(error.message));
+  }
+}
+
+function* restoreDirectoryReviewSaga(action: PayloadAction<string>): Generator {
+  try {
+    const reviewId = action.payload;
+    const restoredReview = (yield call(restoreDirectoryReview, reviewId)) as DirectoryReview;
+    yield put(updateDirectoryReviewStatusSuccess(restoredReview));
+  } catch (error: any) {
+    yield put(updateDirectoryReviewStatusFailure(error.message));
+  }
+}
+
 export function* directorySaga() {
   yield all([
     takeLatest(fetchDirectoryCategoriesStart.type, fetchDirectoryCategoriesSaga),
     takeLatest(addDirectoryCategoryStart.type, addDirectoryCategorySaga),
     takeLatest(updateDirectoryCategoryStart.type, updateDirectoryCategorySaga),
     takeLatest(deleteDirectoryCategoryStart.type, deleteDirectoryCategorySaga),
+    takeLatest(fetchDirectoryReviewsStart.type, fetchDirectoryReviewsSaga),
+    takeLatest(updateDirectoryReviewStatusStart.type, updateDirectoryReviewStatusSaga),
+    takeLatest(restoreDirectoryReviewStart.type, restoreDirectoryReviewSaga),
   ]);
 }
