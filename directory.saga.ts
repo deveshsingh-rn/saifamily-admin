@@ -8,6 +8,7 @@ import {
 } from '@/services/directoryCategories.api';
 import { getDirectoryReviews, updateDirectoryReviewStatus, restoreDirectoryReview } from '@/services/directoryReviews.api';
 import { getDirectoryReports, resolveDirectoryReport } from '@/services/directoryReports.api';
+import { getDirectoryListings, updateDirectoryListing } from '@/services/directoryListings.api';
 import {
   fetchDirectoryCategoriesStart,
   fetchDirectoryCategoriesSuccess,
@@ -34,12 +35,20 @@ import {
   resolveDirectoryReportStart,
   resolveDirectoryReportSuccess,
   resolveDirectoryReportFailure,
+  fetchDirectoryListingsStart,
+  fetchDirectoryListingsSuccess,
+  fetchDirectoryListingsFailure,
+  updateDirectoryListingStart,
+  updateDirectoryListingSuccess,
+  updateDirectoryListingFailure,
   UpdateActionPayload,
   UpdateReviewStatusActionPayload,
+  UpdateListingActionPayload,
 } from './directory.slice';
 import { DirectoryCategory, CreateDirectoryCategoryPayload } from '@/types/directoryCategory';
 import { DirectoryReview, DirectoryReviewStatus } from '@/types/directoryReview';
 import { DirectoryReport, DirectoryReportStatus as ReportStatus, ResolveReportPayload } from '@/types/directoryReport';
+import { DirectoryListing, DirectoryListingStatus as ListingStatus } from '@/types/directoryListing';
 
 function* fetchDirectoryCategoriesSaga(): Generator {
   try {
@@ -127,6 +136,25 @@ function* resolveDirectoryReportSaga(action: PayloadAction<ResolveReportPayload>
   }
 }
 
+function* fetchDirectoryListingsSaga(action: PayloadAction<ListingStatus | undefined>): Generator {
+  try {
+    const listings = (yield call(getDirectoryListings, action.payload)) as DirectoryListing[];
+    yield put(fetchDirectoryListingsSuccess(listings));
+  } catch (error: any) {
+    yield put(fetchDirectoryListingsFailure(error.message));
+  }
+}
+
+function* updateDirectoryListingSaga(action: PayloadAction<UpdateListingActionPayload>): Generator {
+  try {
+    const { listingId, payload } = action.payload;
+    const updatedListing = (yield call(updateDirectoryListing, listingId, payload)) as DirectoryListing;
+    yield put(updateDirectoryListingSuccess(updatedListing));
+  } catch (error: any) {
+    yield put(updateDirectoryListingFailure(error.message));
+  }
+}
+
 export function* directorySaga() {
   yield all([
     takeLatest(fetchDirectoryCategoriesStart.type, fetchDirectoryCategoriesSaga),
@@ -138,5 +166,7 @@ export function* directorySaga() {
     takeLatest(restoreDirectoryReviewStart.type, restoreDirectoryReviewSaga),
     takeLatest(fetchDirectoryReportsStart.type, fetchDirectoryReportsSaga),
     takeLatest(resolveDirectoryReportStart.type, resolveDirectoryReportSaga),
+    takeLatest(fetchDirectoryListingsStart.type, fetchDirectoryListingsSaga),
+    takeLatest(updateDirectoryListingStart.type, updateDirectoryListingSaga),
   ]);
 }

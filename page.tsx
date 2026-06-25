@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import {
-  fetchDirectoryReportsStart,
-  resolveDirectoryReportStart,
+  fetchDirectoryListingsStart,
+  updateDirectoryListingStart,
 } from '@/store/directory/directory.slice';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,78 +17,63 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { DirectoryReportStatus } from '@/types/directoryReport';
+import { DirectoryListingStatus } from '@/types/directoryListing';
+import { MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
 
 const statusColors: Record<
-  DirectoryReportStatus,
+  DirectoryListingStatus,
   'default' | 'secondary' | 'destructive' | 'outline'
 > = {
-  pending: 'secondary',
-  resolved: 'default',
-  dismissed: 'outline',
+  pending_review: 'secondary',
+  approved: 'default',
+  rejected: 'destructive',
+  suspended: 'destructive',
 };
 
-export default function DirectoryReportsPage() {
+export default function DirectoryListingsPage() {
   const dispatch = useDispatch();
-  const { reports, loading, submitting, error } = useSelector(
+  const { listings, loading, submitting, error } = useSelector(
     (state: RootState) => state.directory
   );
 
   const [statusFilter, setStatusFilter] = useState<
-    DirectoryReportStatus | 'all'
-  >('pending');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
-  const [resolutionNote, setResolutionNote] = useState('');
+    DirectoryListingStatus | 'all'
+  >('pending_review');
 
   useEffect(() => {
     const filter = statusFilter === 'all' ? undefined : statusFilter;
-    dispatch(fetchDirectoryReportsStart(filter));
+    dispatch(fetchDirectoryListingsStart(filter));
   }, [dispatch, statusFilter]);
 
-  const openResolveDialog = (reportId: string) => {
-    setSelectedReportId(reportId);
-    setResolutionNote('');
-    setIsDialogOpen(true);
-  };
-
-  const handleResolve = (status: 'resolved' | 'dismissed') => {
-    if (!selectedReportId) return;
-    dispatch(
-      resolveDirectoryReportStart({
-        reportId: selectedReportId,
-        status,
-        note: resolutionNote,
-      })
-    );
-    setIsDialogOpen(false);
+  const handleUpdate = (
+    listingId: string,
+    payload: { status?: DirectoryListingStatus; isVerified?: boolean }
+  ) => {
+    dispatch(updateDirectoryListingStart({ listingId, payload }));
   };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Moderate Directory Reports</h1>
+        <h1 className="text-2xl font-bold">Moderate Directory Listings</h1>
         <div className="w-[180px]">
           <Select
             value={statusFilter}
-            onValueChange={(value: DirectoryReportStatus | 'all') =>
+            onValueChange={(value: DirectoryListingStatus | 'all') =>
               setStatusFilter(value)
             }
           >
@@ -97,15 +82,16 @@ export default function DirectoryReportsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="resolved">Resolved</SelectItem>
-              <SelectItem value="dismissed">Dismissed</SelectItem>
+              <SelectItem value="pending_review">Pending Review</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="suspended">Suspended</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {loading && <p>Loading reports...</p>}
+      {loading && <p>Loading listings...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
 
       {!loading && !error && (
@@ -113,41 +99,67 @@ export default function DirectoryReportsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Listing</TableHead>
-                <TableHead>Reported By</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>Details</TableHead>
+                <TableHead>Business Name</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead>City</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Verified</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reports.map((report) => (
-                <TableRow key={report.id}>
+              {listings.map((listing) => (
+                <TableRow key={listing.id}>
                   <TableCell className="font-medium">
-                    {report.listing?.businessName || 'N/A'}
+                    {listing.businessName}
                   </TableCell>
-                  <TableCell>{report.user?.name || 'N/A'}</TableCell>
-                  <TableCell>{report.reason}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {report.details || '-'}
-                  </TableCell>
+                  <TableCell>{listing.owner?.name || 'N/A'}</TableCell>
+                  <TableCell>{listing.city}</TableCell>
                   <TableCell>
-                    <Badge variant={statusColors[report.status]}>
-                      {report.status}
+                    <Badge variant={statusColors[listing.status]}>
+                      {listing.status.replace('_', ' ')}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
-                    {report.status === 'pending' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openResolveDialog(report.id)}
-                        disabled={submitting}
-                      >
-                        Resolve
-                      </Button>
+                  <TableCell>
+                    {listing.isVerified ? (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-gray-400" />
                     )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          disabled={submitting}
+                        >
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {listing.status === 'pending_review' && (
+                          <>
+                            <DropdownMenuItem onClick={() => handleUpdate(listing.id, { status: 'approved' })}>Approve</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleUpdate(listing.id, { status: 'rejected' })}>Reject</DropdownMenuItem>
+                          </>
+                        )}
+                        {listing.status === 'approved' && (
+                          <DropdownMenuItem onClick={() => handleUpdate(listing.id, { status: 'suspended' })}>Suspend</DropdownMenuItem>
+                        )}
+                        {(listing.status === 'rejected' || listing.status === 'suspended') && (
+                          <DropdownMenuItem onClick={() => handleUpdate(listing.id, { status: 'pending_review' })}>Restore to Pending</DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        {listing.isVerified ? (
+                          <DropdownMenuItem onClick={() => handleUpdate(listing.id, { isVerified: false })}>Un-verify</DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => handleUpdate(listing.id, { isVerified: true })}>Verify</DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
@@ -155,34 +167,6 @@ export default function DirectoryReportsPage() {
           </Table>
         </div>
       )}
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Resolve Report</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-2">
-            <Label htmlFor="note">Resolution Note (Optional)</Label>
-            <Textarea
-              id="note"
-              value={resolutionNote}
-              onChange={(e) => setResolutionNote(e.target.value)}
-              placeholder="Add a note for internal records..."
-            />
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="ghost">Cancel</Button>
-            </DialogClose>
-            <Button variant="destructive" onClick={() => handleResolve('dismissed')} disabled={submitting}>
-              Dismiss
-            </Button>
-            <Button onClick={() => handleResolve('resolved')} disabled={submitting}>
-              Mark as Resolved
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
