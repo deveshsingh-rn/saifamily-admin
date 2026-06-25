@@ -59,9 +59,9 @@ The work is broken down into four major phases to provide a structured approach.
 
 **Goal**: Implement all specific administrative features as defined by the API.
 
-*   **3.1 User Management (`app/admin/users`)**:
-    *   Implement advanced search and filtering options for users (`GET /api/admin/users`).
-    *   Implement functionality to ban/unban users, including a confirmation dialog (`PATCH /api/admin/users/:id/status`).
+*   **3.1 User Management (`app/admin/users`)**: [COMPLETED]
+    *   Implement advanced search and filtering options for users (`GET /api/admin/users`). [COMPLETED]
+    *   Implement functionality to ban/unban users, including a confirmation dialog (`PATCH /api/admin/users/:id/status`). [COMPLETED]
 *   **3.2 Content Management (`app/admin/content`)**:
     *   Implement list, search, and filtering for "Experiences" (`GET /api/admin/content`).
     *   Implement functionality to delete content (`DELETE /api/admin/content/:id`).

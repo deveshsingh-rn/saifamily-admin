@@ -38,7 +38,7 @@ const usersSlice = createSlice({
   name: 'users',
   initialState,
   reducers: {
-    fetchUsersStart(state, action: PayloadAction<{ page: number; limit: number }>) {
+    fetchUsersStart(state, action: PayloadAction<{ page: number; limit: number; search?: string; status?: string }>) {
       state.loading = true;
       state.error = null;
     },
@@ -53,10 +53,30 @@ const usersSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
+    updateUserStatusStart(state, action: PayloadAction<{ userId: string; isActive: boolean }>) {
+        // Can set a specific loading state for the user row if needed
+        state.error = null;
+    },
+    updateUserStatusSuccess(state, action: PayloadAction<User>) {
+        const index = state.users.findIndex(user => user.id === action.payload.id);
+        if (index !== -1) {
+            state.users[index] = action.payload;
+        }
+    },
+    updateUserStatusFailure(state, action: PayloadAction<string>) {
+        state.error = action.payload;
+    },
   },
 });
 
-export const { fetchUsersStart, fetchUsersSuccess, fetchUsersFailure } = usersSlice.actions;
+export const { 
+    fetchUsersStart, 
+    fetchUsersSuccess, 
+    fetchUsersFailure,
+    updateUserStatusStart,
+    updateUserStatusSuccess,
+    updateUserStatusFailure,
+} = usersSlice.actions;
 
 export const selectUsers = (state: RootState) => state.users.users;
 export const selectUsersLoading = (state: RootState) => state.users.loading;

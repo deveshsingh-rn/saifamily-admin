@@ -1,8 +1,9 @@
 import React from 'react';
 
-interface Column {
+export interface Column {
   header: string;
   accessor: string;
+  cell?: (row: any) => React.ReactNode;
 }
 
 interface TableProps {
@@ -35,7 +36,9 @@ const Table = ({ columns, data }: TableProps) => {
                   <tr key={i}>
                     {columns.map((column) => (
                       <td key={column.accessor} className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{row[column.accessor]}</div>
+                        {column.cell ? column.cell(row) : (
+                            <div className="text-sm text-gray-900">{row[column.accessor]}</div>
+                        )}
                       </td>
                     ))}
                   </tr>
