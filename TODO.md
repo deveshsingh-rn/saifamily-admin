@@ -79,9 +79,9 @@ The work is broken down into four major phases to provide a structured approach.
     *   Expand `app/store/features/sangha/sanghaSlice.ts` and `app/store/features/sangha/sanghaSaga.ts` to cover all admin endpoints.
     *   **Group Management**: Implement CRUD operations for Sangha Groups (`POST /api/admin/sangha/groups`, `PATCH /api/admin/sangha/groups/:id`, `DELETE /api/admin/sangha/groups/:id`). [COMPLETED]
     *   **Group Member Management**: Implement UI for updating member roles and removing members (`PATCH /api/admin/sangha/groups/:id/members/:memberId`, `DELETE /api/admin/sangha/groups/:id/members/:memberId`). [COMPLETED]
-    *   **Group Verification**: Implement actions to verify/unverify groups (`POST /api/admin/sangha/groups/:id/verify`, `POST /api/admin/sangha/groups/:id/unverify`).
-    *   **Reports Moderation**: Build UI for viewing and resolving Sangha Reports (`GET /api/admin/sangha/reports`).
-    *   **Announcements**: Implement a form to send announcements to groups (`POST /api/admin/sangha/announcements`).
+    *   **Group Verification**: Implement actions to verify/unverify groups (`POST /api/admin/sangha/groups/:id/verify`, `POST /api/admin/sangha/groups/:id/unverify`). [COMPLETED]
+    *   **Reports Moderation**: Build UI for viewing and resolving Sangha Reports (`GET /api/admin/sangha/reports`). [COMPLETED]
+    *   **Announcements**: Implement a form to send announcements to groups (`POST /api/admin/sangha/announcements`). [COMPLETED]
     *   **Live Stream Management**: Build UI for listing, ending, removing recordings, and deleting chat messages for live streams.
     *   **Analytics & Audit Logs**: Create pages to display Sangha Analytics (`GET /api/admin/sangha/analytics`) and Audit Logs (`GET /api/admin/sangha/audit-logs`).
 *   **3.6 Notifications (Admin)**:
