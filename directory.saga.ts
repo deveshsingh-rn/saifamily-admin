@@ -41,6 +41,12 @@ import {
   updateDirectoryListingStart,
   updateDirectoryListingSuccess,
   updateDirectoryListingFailure,
+  fetchDirectoryAnalyticsStart,
+  fetchDirectoryAnalyticsSuccess,
+  fetchDirectoryAnalyticsFailure,
+  fetchDirectoryAuditLogsStart,
+  fetchDirectoryAuditLogsSuccess,
+  fetchDirectoryAuditLogsFailure,
   UpdateActionPayload,
   UpdateReviewStatusActionPayload,
   UpdateListingActionPayload,
@@ -49,6 +55,7 @@ import { DirectoryCategory, CreateDirectoryCategoryPayload } from '@/types/direc
 import { DirectoryReview, DirectoryReviewStatus } from '@/types/directoryReview';
 import { DirectoryReport, DirectoryReportStatus as ReportStatus, ResolveReportPayload } from '@/types/directoryReport';
 import { DirectoryListing, DirectoryListingStatus as ListingStatus } from '@/types/directoryListing';
+import { DirectoryAnalytics, DirectoryAuditLog } from '@/types/directoryMeta';
 
 function* fetchDirectoryCategoriesSaga(): Generator {
   try {
@@ -155,6 +162,24 @@ function* updateDirectoryListingSaga(action: PayloadAction<UpdateListingActionPa
   }
 }
 
+function* fetchDirectoryAnalyticsSaga(): Generator {
+  try {
+    const analytics = (yield call(getDirectoryAnalytics)) as DirectoryAnalytics;
+    yield put(fetchDirectoryAnalyticsSuccess(analytics));
+  } catch (error: any) {
+    yield put(fetchDirectoryAnalyticsFailure(error.message));
+  }
+}
+
+function* fetchDirectoryAuditLogsSaga(): Generator {
+  try {
+    const auditLogs = (yield call(getDirectoryAuditLogs)) as DirectoryAuditLog[];
+    yield put(fetchDirectoryAuditLogsSuccess(auditLogs));
+  } catch (error: any) {
+    yield put(fetchDirectoryAuditLogsFailure(error.message));
+  }
+}
+
 export function* directorySaga() {
   yield all([
     takeLatest(fetchDirectoryCategoriesStart.type, fetchDirectoryCategoriesSaga),
@@ -168,5 +193,7 @@ export function* directorySaga() {
     takeLatest(resolveDirectoryReportStart.type, resolveDirectoryReportSaga),
     takeLatest(fetchDirectoryListingsStart.type, fetchDirectoryListingsSaga),
     takeLatest(updateDirectoryListingStart.type, updateDirectoryListingSaga),
+    takeLatest(fetchDirectoryAnalyticsStart.type, fetchDirectoryAnalyticsSaga),
+    takeLatest(fetchDirectoryAuditLogsStart.type, fetchDirectoryAuditLogsSaga),
   ]);
 }

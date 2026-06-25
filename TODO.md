@@ -74,7 +74,7 @@ The work is broken down into four major phases to provide a structured approach.
     *   **Reviews Moderation**: Build UI for viewing and moderating Directory Reviews (`GET /api/admin/directory/reviews`). Implement actions to approve, reject, hide, and restore reviews. [COMPLETED]
     *   **Reports Moderation**: Build UI for viewing and resolving Directory Reports (`GET /api/admin/directory/reports`). Implement actions to resolve/dismiss reports. [COMPLETED]
     *   **Listing Moderation**: Build UI for viewing and managing Directory Listings (`GET /api/admin/directory/listings`). Implement actions to approve, reject, suspend, restore, verify, and unverify listings. [COMPLETED]
-    *   **Analytics & Audit Logs**: Create pages to display Directory Analytics (`GET /api/admin/directory/analytics`) and Audit Logs (`GET /api/admin/directory/audit-logs`).
+    *   **Analytics & Audit Logs**: Create pages to display Directory Analytics (`GET /api/admin/directory/analytics`) and Audit Logs (`GET /api/admin/directory/audit-logs`). [COMPLETED]
 *   **3.5 Sangha Management (Expand Feature - Admin Side)**:
     *   Expand `app/store/features/sangha/sanghaSlice.ts` and `app/store/features/sangha/sanghaSaga.ts` to cover all admin endpoints.
     *   **Group Management**: Implement CRUD operations for Sangha Groups (`POST /api/admin/sangha/groups`, `PATCH /api/admin/sangha/groups/:id`, `DELETE /api/admin/sangha/groups/:id`).
