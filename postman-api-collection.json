@@ -49,66 +49,244 @@
       "name": "Auth",
       "item": [
         {
-          "name": "POST /auth/send-otp",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"mobileNumber\": \"{{mobileNumber}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+          "name": "User Authentication",
+          "item": [
+            {
+              "name": "POST /api/auth/mobile/send-otp",
+              "description": "Sends a six-digit OTP through MSG91. mobileNumber must use E.164 format, for example +919876543210.",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"mobileNumber\": \"{{mobileNumber}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/mobile/send-otp"
+              },
+              "response": []
             },
-            "url": {
-              "raw": "{{baseUrl}}/auth/send-otp",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "send-otp"
+            {
+              "name": "POST /api/auth/mobile/verify-otp",
+              "description": "Verifies the MSG91 OTP. In local development, {{otp}} may be 7664 when STATIC_OTP=7664.",
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Mobile authentication succeeded\", () => pm.response.to.have.status(200));",
+                    "const json = pm.response.json();",
+                    "if (json.tokens) {",
+                    "  pm.environment.set(\"accessToken\", json.tokens.accessToken);",
+                    "  pm.environment.set(\"refreshToken\", json.tokens.refreshToken);",
+                    "}",
+                    "if (json.user) {",
+                    "  pm.environment.set(\"authUserId\", json.user.id);",
+                    "  pm.environment.set(\"authorId\", json.user.id);",
+                    "  pm.environment.set(\"authRole\", json.user.role);",
+                    "}"
+                  ]
+                }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"mobileNumber\": \"{{mobileNumber}}\",\n  \"otp\": \"{{otp}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/mobile/verify-otp"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/email/register",
+              "description": "Creates email credentials and sends a six-digit verification code through Brevo. Password requires 8-72 characters, upper/lowercase letters, and a number.",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/email/register"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/email/verify",
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Email verified\", () => pm.response.to.have.status(200));",
+                    "const json = pm.response.json();",
+                    "if (json.tokens) { pm.environment.set(\"accessToken\", json.tokens.accessToken); pm.environment.set(\"refreshToken\", json.tokens.refreshToken); }",
+                    "if (json.user) { pm.environment.set(\"authUserId\", json.user.id); pm.environment.set(\"authorId\", json.user.id); pm.environment.set(\"authRole\", json.user.role); }"
+                  ]
+                }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"otp\": \"{{emailOtp}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/email/verify"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/email/resend-verification",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/email/resend-verification"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/email/login",
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Email login succeeded\", () => pm.response.to.have.status(200));",
+                    "const json = pm.response.json();",
+                    "if (json.tokens) { pm.environment.set(\"accessToken\", json.tokens.accessToken); pm.environment.set(\"refreshToken\", json.tokens.refreshToken); }",
+                    "if (json.user) { pm.environment.set(\"authUserId\", json.user.id); pm.environment.set(\"authorId\", json.user.id); pm.environment.set(\"authRole\", json.user.role); }"
+                  ]
+                }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/email/login"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Admin Authentication",
+          "description": "Admins use the same authentication services. The returned JWT role comes from the database; these APIs never promote a user to admin.",
+          "item": [
+            {
+              "name": "POST /api/auth/mobile/send-otp - Admin",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"mobileNumber\": \"{{adminMobileNumber}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/mobile/send-otp"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/mobile/verify-otp - Admin",
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Admin mobile login succeeded\", () => pm.response.to.have.status(200));",
+                    "const json = pm.response.json();",
+                    "pm.expect([\"mandir_admin\", \"super_admin\"]).to.include(json.user.role);",
+                    "pm.environment.set(\"adminAccessToken\", json.tokens.accessToken);",
+                    "pm.environment.set(\"adminRefreshToken\", json.tokens.refreshToken);",
+                    "pm.environment.set(\"adminId\", json.user.id);"
+                  ]
+                }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"mobileNumber\": \"{{adminMobileNumber}}\",\n  \"otp\": \"{{otp}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/mobile/verify-otp"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/email/register - Configure Admin Password",
+              "description": "Use this once when the existing admin email has no password. The database role is preserved and a Brevo verification email is sent.",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/email/register"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/email/verify - Admin",
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Admin email verified\", () => pm.response.to.have.status(200));",
+                    "const json = pm.response.json();",
+                    "pm.expect([\"mandir_admin\", \"super_admin\"]).to.include(json.user.role);",
+                    "pm.environment.set(\"adminAccessToken\", json.tokens.accessToken);",
+                    "pm.environment.set(\"adminRefreshToken\", json.tokens.refreshToken);",
+                    "pm.environment.set(\"adminId\", json.user.id);"
+                  ]
+                }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"otp\": \"{{emailOtp}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/email/verify"
+              },
+              "response": []
+            },
+            {
+              "name": "POST /api/auth/email/login - Admin",
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test(\"Admin email login succeeded\", () => pm.response.to.have.status(200));",
+                    "const json = pm.response.json();",
+                    "pm.expect([\"mandir_admin\", \"super_admin\"]).to.include(json.user.role);",
+                    "pm.environment.set(\"adminAccessToken\", json.tokens.accessToken);",
+                    "pm.environment.set(\"adminRefreshToken\", json.tokens.refreshToken);",
+                    "pm.environment.set(\"adminId\", json.user.id);"
+                  ]
+                }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}", "options": { "raw": { "language": "json" } } },
+                "url": "{{baseUrl}}/api/auth/email/login"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "POST /api/auth/refresh-token",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "pm.test(\"Token refreshed\", () => pm.response.to.have.status(200));",
+                "const json = pm.response.json();",
+                "pm.environment.set(\"accessToken\", json.tokens.accessToken);",
+                "pm.environment.set(\"refreshToken\", json.tokens.refreshToken);"
               ]
             }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/auth/refresh-token"
           },
           "response": []
         },
         {
-          "name": "POST /auth/verify-otp",
+          "name": "POST /api/auth/logout",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"mobileNumber\": \"{{mobileNumber}}\",\n  \"otp\": \"{{otp}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth/verify-otp",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "verify-otp"
-              ]
-            }
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}", "options": { "raw": { "language": "json" } } },
+            "url": "{{baseUrl}}/api/auth/logout"
           },
           "response": []
         }
@@ -119,7 +297,7 @@
       "item": [
         {
           "name": "POST /accounts - Create devotee account with profile image",
-          "description": "Validation: profileImage is required (jpg/png/webp, <=5MB). name min 2, email valid, mobileNumber 8-15 chars, completeAddress min 10, pincode 4-10 digits, occupation min 2. Optional expoPushToken must match Expo token format.",
+          "description": "Run a mobile or email verification request first. This protected multipart request completes the authenticated account. email/mobileNumber must match the selected verified identity when already present.",
           "event": [
             {
               "listen": "test",
@@ -144,8 +322,9 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -158,12 +337,12 @@
                 },
                 {
                   "key": "email",
-                  "value": "devotee{{$timestamp}}@example.com",
+                  "value": "{{email}}",
                   "type": "text"
                 },
                 {
                   "key": "mobileNumber",
-                  "value": "+91{{$timestamp}}",
+                  "value": "{{mobileNumber}}",
                   "type": "text"
                 },
                 {
@@ -7604,7 +7783,67 @@
     },
     {
       "key": "otp",
-      "value": "123456",
+      "value": "7664",
+      "type": "string"
+    },
+    {
+      "key": "emailOtp",
+      "value": "7664",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "devotee@example.com",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "SaiFamily@2026",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authRole",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminMobileNumber",
+      "value": "+919999999999",
+      "type": "string"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@example.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminRefreshToken",
+      "value": "",
       "type": "string"
     },
     {

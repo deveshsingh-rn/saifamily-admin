@@ -4,6 +4,7 @@ import contentReducer from '../features/content/contentSlice';
 import categoriesReducer from '../features/categories/categoriesSlice';
 import sanghaReducer from '../features/sangha/sanghaSlice';
 import authReducer from '../features/auth/authSlice';
+import accountReducer from '../features/account/accountSlice';
 
 const rootReducer = combineReducers({
   users: usersReducer,
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   categories: categoriesReducer,
   sangha: sanghaReducer,
   auth: authReducer,
+  account: accountReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;
