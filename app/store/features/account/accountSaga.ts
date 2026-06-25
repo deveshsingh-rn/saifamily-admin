@@ -14,7 +14,11 @@ function* createAccountSaga(action: ReturnType<typeof createAccountStart>): Gene
     // The exact response from POST /accounts needs to be confirmed from the API docs.
     // Assuming it returns the same payload as login:
     if (response.data.token && response.data.userId) {
-        yield put(loginSuccess({ userId: response.data.userId, token: response.data.token }));
+        yield put(loginSuccess({
+          userId: response.data.userId,
+          token: response.data.token,
+          role: response.data.role,
+        }));
     }
 
     yield put(createAccountSuccess());

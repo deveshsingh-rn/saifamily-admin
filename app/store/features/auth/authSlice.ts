@@ -4,6 +4,7 @@ import { RootState } from '../../reducers';
 interface AuthState {
   userId: string | null;
   token: string | null;
+  role: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
@@ -13,6 +14,7 @@ interface AuthState {
 const initialState: AuthState = {
   userId: null,
   token: null,
+  role: null,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -39,9 +41,13 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    verifyOtpSuccess(state, action: PayloadAction<{ userId: string; token: string }>) {
+    verifyOtpSuccess(
+      state,
+      action: PayloadAction<{ userId: string; token: string; role: string }>,
+    ) {
       state.userId = action.payload.userId;
       state.token = action.payload.token;
+      state.role = action.payload.role;
       state.isAuthenticated = true;
       state.loading = false;
     },
@@ -55,9 +61,13 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    loginSuccess(state, action: PayloadAction<{ userId: string; token: string }>) {
+    loginSuccess(
+      state,
+      action: PayloadAction<{ userId: string; token: string; role: string }>,
+    ) {
       state.userId = action.payload.userId;
       state.token = action.payload.token;
+      state.role = action.payload.role;
       state.isAuthenticated = true;
       state.loading = false;
     },
@@ -91,6 +101,7 @@ const authSlice = createSlice({
     logout(state) {
       state.userId = null;
       state.token = null;
+      state.role = null;
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;

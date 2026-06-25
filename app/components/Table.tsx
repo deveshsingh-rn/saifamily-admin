@@ -32,7 +32,7 @@ const Table = ({ columns, data }: TableProps) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {data.map((row, i) => (
+                {data?.map((row, i) => (
                   <tr key={i}>
                     {columns.map((column) => (
                       <td key={column.accessor} className="px-6 py-4 whitespace-nowrap">

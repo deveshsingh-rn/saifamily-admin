@@ -70,7 +70,7 @@ const LoginPage = () => {
     setShowOtpForm(true);
   };
 
-  const handleVerifyOtp = (e: React.FormEveznt) => {
+  const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(verifyOtpStart({ mobileNumber, otp }));
   };
