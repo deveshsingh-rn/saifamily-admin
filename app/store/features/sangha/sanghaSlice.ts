@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { SanghaGroup, CreateSanghaGroupPayload, UpdateSanghaGroupPayload } from '@/types/sanghaGroup';
 import { SanghaMember, UpdateMemberActionPayload } from '@/types/sanghaMember';
+import { SanghaReport, ResolveSanghaReportPayload, SanghaReportStatus } from '@/types/sanghaReport';
+import { SendAnnouncementPayload } from '@/types/sanghaAnnouncement';
+import { SanghaLiveStream } from '@/types/sanghaLiveStream';
+import { SanghaAnalytics, SanghaAuditLog } from '@/types/sanghaMeta';
+import { PaginatedResponse } from '@/types/api';
 
 export interface UpdateGroupActionPayload {
   id: string;
@@ -14,17 +19,36 @@ export interface RemoveMemberActionPayload {
 
 interface SanghaState {
   groups: SanghaGroup[];
+  reports: SanghaReport[];
   members: SanghaMember[];
+  liveStreams: SanghaLiveStream[];
+  analytics: SanghaAnalytics | null;
+  auditLogs: {
+    logs: SanghaAuditLog[];
+    totalPages: number;
+    currentPage: number;
+  };
   loading: boolean;
+  loadingReports: boolean;
   loadingMembers: boolean;
+  loadingLiveStreams: boolean;
+  loadingAuditLogs: boolean;
   submitting: boolean;
   error: string | null;
 }
 
 const initialState: SanghaState = {
   groups: [],
+  reports: [],
   members: [],
+  liveStreams: [],
+  analytics: null,
+  auditLogs: { logs: [], totalPages: 1, currentPage: 1 },
   loading: false,
+  loadingReports: false,
+  loadingMembers: false,
+  loadingLiveStreams: false,
+  loadingAuditLogs: false,
   submitting: false,
   error: null,
 };
@@ -85,6 +109,105 @@ const sanghaSlice = createSlice({
       state.error = action.payload;
     },
 
+    // Group Verification
+    verifyGroupStart(state, action: PayloadAction<string>) {
+      state.submitting = true;
+      state.error = null;
+    },
+    unverifyGroupStart(state, action: PayloadAction<string>) {
+      state.submitting = true;
+      state.error = null;
+    },
+
+    // Reports Moderation
+    fetchSanghaReportsStart(state, action: PayloadAction<SanghaReportStatus | undefined>) {
+      state.loadingReports = true;
+      state.error = null;
+    },
+    fetchSanghaReportsSuccess(state, action: PayloadAction<SanghaReport[]>) {
+      state.reports = action.payload;
+      state.loadingReports = false;
+    },
+    fetchSanghaReportsFailure(state, action: PayloadAction<string>) {
+      state.loadingReports = false;
+      state.error = action.payload;
+    },
+    resolveSanghaReportStart(state, action: PayloadAction<ResolveSanghaReportPayload>) {
+      state.submitting = true;
+      state.error = null;
+    },
+    resolveSanghaReportSuccess(state, action: PayloadAction<SanghaReport>) {
+      const index = state.reports.findIndex(report => report.id === action.payload.id);
+      if (index !== -1) {
+        state.reports[index] = action.payload;
+      }
+      state.submitting = false;
+    },
+    resolveSanghaReportFailure(state, action: PayloadAction<string>) {
+      state.submitting = false;
+      state.error = action.payload;
+    },
+
+    // Announcements
+    sendAnnouncementStart(state, action: PayloadAction<SendAnnouncementPayload>) {
+      state.submitting = true;
+      state.error = null;
+    },
+    sendAnnouncementSuccess(state) {
+      state.submitting = false;
+    },
+    sendAnnouncementFailure(state, action: PayloadAction<string>) {
+      state.submitting = false;
+      state.error = action.payload;
+    },
+
+    // Live Streams
+    fetchLiveStreamsStart(state) {
+      state.loadingLiveStreams = true;
+      state.error = null;
+    },
+    fetchLiveStreamsSuccess(state, action: PayloadAction<SanghaLiveStream[]>) {
+      state.liveStreams = action.payload;
+      state.loadingLiveStreams = false;
+    },
+    fetchLiveStreamsFailure(state, action: PayloadAction<string>) {
+      state.loadingLiveStreams = false;
+      state.error = action.payload;
+    },
+    endLiveStreamStart(state, action: PayloadAction<string>) {
+      state.submitting = true;
+    },
+    endLiveStreamSuccess(state, action: PayloadAction<SanghaLiveStream>) {
+      const index = state.liveStreams.findIndex(stream => stream.id === action.payload.id);
+      if (index !== -1) state.liveStreams[index] = action.payload;
+      state.submitting = false;
+    },
+    removeLiveStreamRecordingStart(state, action: PayloadAction<string>) {
+      state.submitting = true;
+    },
+    removeLiveStreamRecordingSuccess(state, action: PayloadAction<string>) {
+      const index = state.liveStreams.findIndex(stream => stream.id === action.payload);
+      if (index !== -1) state.liveStreams[index].hasRecording = false;
+      state.submitting = false;
+    },
+    liveStreamActionFailure(state, action: PayloadAction<string>) {
+      state.submitting = false;
+      state.error = action.payload;
+    },
+
+    // Analytics & Logs
+    fetchSanghaAnalyticsStart(state) { state.loading = true; state.error = null; },
+    fetchSanghaAnalyticsSuccess(state, action: PayloadAction<SanghaAnalytics>) { state.analytics = action.payload; state.loading = false; },
+    fetchSanghaAnalyticsFailure(state, action: PayloadAction<string>) { state.loading = false; state.error = action.payload; },
+    fetchSanghaAuditLogsStart(state, action: PayloadAction<{ page: number; limit: number }>) { state.loadingAuditLogs = true; state.error = null; },
+    fetchSanghaAuditLogsSuccess(state, action: PayloadAction<PaginatedResponse<SanghaAuditLog>>) {
+      state.auditLogs.logs = action.payload.data;
+      state.auditLogs.totalPages = action.payload.totalPages;
+      state.auditLogs.currentPage = action.payload.currentPage;
+      state.loadingAuditLogs = false;
+    },
+    fetchSanghaAuditLogsFailure(state, action: PayloadAction<string>) { state.loadingAuditLogs = false; state.error = action.payload; },
+
     // Group Members
     fetchGroupMembersStart(state, action: PayloadAction<string>) {
       state.loadingMembers = true;
@@ -134,6 +257,17 @@ export const {
   addSanghaGroupStart, addSanghaGroupSuccess, addSanghaGroupFailure,
   updateSanghaGroupStart, updateSanghaGroupSuccess, updateSanghaGroupFailure,
   deleteSanghaGroupStart, deleteSanghaGroupSuccess, deleteSanghaGroupFailure,
+  verifyGroupStart,
+  unverifyGroupStart,
+  fetchSanghaReportsStart, fetchSanghaReportsSuccess, fetchSanghaReportsFailure,
+  resolveSanghaReportStart, resolveSanghaReportSuccess, resolveSanghaReportFailure,
+  sendAnnouncementStart, sendAnnouncementSuccess, sendAnnouncementFailure,
+  fetchLiveStreamsStart, fetchLiveStreamsSuccess, fetchLiveStreamsFailure,
+  endLiveStreamStart, endLiveStreamSuccess,
+  removeLiveStreamRecordingStart, removeLiveStreamRecordingSuccess,
+  liveStreamActionFailure,
+  fetchSanghaAnalyticsStart, fetchSanghaAnalyticsSuccess, fetchSanghaAnalyticsFailure,
+  fetchSanghaAuditLogsStart, fetchSanghaAuditLogsSuccess, fetchSanghaAuditLogsFailure,
   fetchGroupMembersStart, fetchGroupMembersSuccess, fetchGroupMembersFailure,
   updateGroupMemberRoleStart, updateGroupMemberRoleSuccess, updateGroupMemberRoleFailure,
   removeGroupMemberStart, removeGroupMemberSuccess, removeGroupMemberFailure,
