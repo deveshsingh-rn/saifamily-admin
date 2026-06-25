@@ -1,9 +1,9 @@
-import { axiosInstance } from '@/lib/axios';
+import { axiosInstance } from '@/axios';
 import {
   DirectoryCategory,
   CreateDirectoryCategoryPayload,
   UpdateDirectoryCategoryPayload,
-} from '@/types/directoryCategory';
+} from '@/directoryCategory';
 
 // Using the public endpoint to list categories as there's no admin-specific GET in the collection.
 export const getDirectoryCategories = async (): Promise<DirectoryCategory[]> => {

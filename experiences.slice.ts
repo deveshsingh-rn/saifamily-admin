@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Experience } from '@/types/experience';
+import { Experience } from '@/experience';
 
 export interface ExperiencesState {
   experiences: Experience[];

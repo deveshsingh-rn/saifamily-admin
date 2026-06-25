@@ -18,7 +18,7 @@ import {
   getGroupMembers,
   updateMemberRole,
   removeMember,
-} from '@/services/sangha.api';
+} from '@/sangha.api';
 import {
   fetchSanghaGroupsStart,
   fetchSanghaGroupsSuccess,
@@ -63,12 +63,12 @@ import {
   UpdateGroupActionPayload,
   RemoveMemberActionPayload,
 } from './sanghaSlice';
-import { SanghaGroup, CreateSanghaGroupPayload } from '@/types/sanghaGroup';
-import { SanghaMember, UpdateMemberActionPayload } from '@/types/sanghaMember';
-import { SanghaReport, ResolveSanghaReportPayload, SanghaReportStatus } from '@/types/sanghaReport';
-import { SendAnnouncementPayload } from '@/types/sanghaAnnouncement';
-import { SanghaLiveStream } from '@/types/sanghaLiveStream';
-import { SanghaAnalytics, SanghaAuditLog } from '@/types/sanghaMeta';
+import { SanghaGroup, CreateSanghaGroupPayload } from '@/sanghaGroup';
+import { SanghaMember, UpdateMemberActionPayload } from '@/sanghaMember';
+import { SanghaReport, ResolveSanghaReportPayload, SanghaReportStatus } from '@/sanghaReport';
+import { SendAnnouncementPayload } from '@/sanghaAnnouncement';
+import { SanghaLiveStream } from '@/sanghaLiveStream';
+import { SanghaAnalytics, SanghaAuditLog } from '@/sanghaMeta';
 import { PaginatedResponse } from '@/types/api';
 
 function* fetchSanghaGroupsSaga(): Generator {

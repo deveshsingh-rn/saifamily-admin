@@ -1,5 +1,5 @@
-import { axiosInstance } from '@/lib/axios';
-import { DirectoryReview, DirectoryReviewStatus } from '@/types/directoryReview';
+import { axiosInstance } from '@/axios';
+import { DirectoryReview, DirectoryReviewStatus } from '@/directoryReview';
 
 export const getDirectoryReviews = async (
   status?: DirectoryReviewStatus

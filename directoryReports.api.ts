@@ -1,5 +1,5 @@
-import { axiosInstance } from '@/lib/axios';
-import { DirectoryReport, DirectoryReportStatus } from '@/types/directoryReport';
+import { axiosInstance } from '@/axios';
+import { DirectoryReport, DirectoryReportStatus } from '@/directoryReport';
 
 export const getDirectoryReports = async (
   status?: DirectoryReportStatus

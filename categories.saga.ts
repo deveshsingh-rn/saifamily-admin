@@ -4,7 +4,7 @@ import {
   getCategories,
   createCategory,
   updateCategory,
-} from '@/services/categories.api';
+} from '@/categories.api';
 import {
   fetchCategoriesStart,
   fetchCategoriesSuccess,
@@ -17,7 +17,7 @@ import {
   updateCategoryFailure,
   UpdateCategoryActionPayload,
 } from './categories.slice';
-import { Category, CreateCategoryPayload } from '@/types/category';
+import { Category, CreateCategoryPayload } from '@/category';
 
 function* fetchCategoriesSaga(): Generator {
   try {

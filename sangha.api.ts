@@ -1,15 +1,15 @@
-import { axiosInstance } from '@/lib/axios';
+import { axiosInstance } from '@/axios';
 import {
   SanghaGroup,
   CreateSanghaGroupPayload,
   UpdateSanghaGroupPayload,
-} from '@/types/sanghaGroup';
-import { SanghaMember, UpdateMemberRolePayload } from '@/types/sanghaMember';
-import { SanghaReport, SanghaReportStatus, ResolveSanghaReportPayload } from '@/types/sanghaReport';
-import { SendAnnouncementPayload } from '@/types/sanghaAnnouncement';
-import { SanghaLiveStream } from '@/types/sanghaLiveStream';
-import { SanghaAnalytics, SanghaAuditLog } from '@/types/sanghaMeta';
-import { PaginatedResponse } from '@/types/api';
+} from '@/sanghaGroup';
+import { SanghaMember, UpdateMemberRolePayload } from '@/sanghaMember';
+import { SanghaReport, SanghaReportStatus, ResolveSanghaReportPayload } from '@/sanghaReport';
+import { SendAnnouncementPayload } from '@/sanghaAnnouncement';
+import { SanghaLiveStream } from '@/sanghaLiveStream';
+import { SanghaAnalytics, SanghaAuditLog } from '@/sanghaMeta';
+// import { PaginatedResponse } from '@/types/api';
 
 export const getSanghaGroups = async (): Promise<SanghaGroup[]> => {
   try {

@@ -1,5 +1,5 @@
-import { axiosInstance } from '@/lib/axios';
-import { DirectoryAnalytics, DirectoryAuditLog } from '@/types/directoryMeta';
+import { axiosInstance } from '@/axios';
+import { DirectoryAnalytics, DirectoryAuditLog } from '@/directoryMeta';
 
 export const getDirectoryAnalytics = async (): Promise<DirectoryAnalytics> => {
   try {

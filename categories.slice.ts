@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Category, CreateCategoryPayload } from '@/types/category';
+import { Category, CreateCategoryPayload } from '@/category';
 
 export interface UpdateCategoryActionPayload {
   categoryName: string;

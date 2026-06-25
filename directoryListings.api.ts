@@ -1,8 +1,8 @@
-import { axiosInstance } from '@/lib/axios';
+import { axiosInstance } from '@/axios';
 import {
   DirectoryListing,
   DirectoryListingStatus,
-} from '@/types/directoryListing';
+} from '@/directoryListing';
 
 export const getDirectoryListings = async (
   status?: DirectoryListingStatus

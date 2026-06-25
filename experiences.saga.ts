@@ -1,6 +1,6 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { getExperiences, deleteExperience } from '@/services/experiences.api';
+import { getExperiences, deleteExperience } from '@/experiences.api';
 import {
   fetchExperiencesStart,
   fetchExperiencesSuccess,
@@ -9,7 +9,7 @@ import {
   deleteExperienceSuccess,
   deleteExperienceFailure,
 } from './experiences.slice';
-import { Experience } from '@/types/experience';
+import { Experience } from '@/experience';
 
 function* fetchExperiencesSaga(action: PayloadAction<string | undefined>): Generator {
   try {

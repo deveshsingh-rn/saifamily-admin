@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { DirectoryCategory, CreateDirectoryCategoryPayload, UpdateDirectoryCategoryPayload } from '@/types/directoryCategory';
-import { DirectoryReview, DirectoryReviewStatus } from '@/types/directoryReview';
-import { DirectoryReport, DirectoryReportStatus as ReportStatus, ResolveReportPayload } from '@/types/directoryReport';
-import { DirectoryListing, DirectoryListingStatus as ListingStatus, UpdateListingActionPayload } from '@/types/directoryListing';
-import { DirectoryAnalytics, DirectoryAuditLog } from '@/types/directoryMeta';
+import { DirectoryCategory, CreateDirectoryCategoryPayload, UpdateDirectoryCategoryPayload } from '@/directoryCategory';
+import { DirectoryReview, DirectoryReviewStatus } from '@/directoryReview';
+import { DirectoryReport, DirectoryReportStatus as ReportStatus, ResolveReportPayload } from '@/directoryReport';
+import { DirectoryListing, DirectoryListingStatus as ListingStatus, UpdateListingActionPayload } from '@/directoryListing';
+import { DirectoryAnalytics, DirectoryAuditLog } from '@/directoryMeta';
 
 export interface UpdateActionPayload {
   id: string;

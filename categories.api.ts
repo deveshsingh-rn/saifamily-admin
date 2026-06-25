@@ -1,9 +1,9 @@
-import { axiosInstance } from '@/lib/axios';
+import { axiosInstance } from '@/axios';
 import {
   Category,
   CreateCategoryPayload,
   UpdateCategoryPayload,
-} from '@/types/category';
+} from '@/category';
 
 export const getCategories = async (): Promise<Category[]> => {
   try {

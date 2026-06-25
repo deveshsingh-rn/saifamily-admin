@@ -1,5 +1,5 @@
-import { axiosInstance } from '@/lib/axios';
-import { Experience } from '@/types/experience';
+import { axiosInstance } from '@/axios';
+import { Experience } from '@/experience';
 
 // The data payload for creating a new experience
 export type CreateExperiencePayload = Omit<Experience, '_id' | 'createdAt'>;

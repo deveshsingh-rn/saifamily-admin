@@ -5,10 +5,10 @@ import {
   createDirectoryCategory,
   updateDirectoryCategory,
   deleteDirectoryCategory,
-} from '@/services/directoryCategories.api';
-import { getDirectoryReviews, updateDirectoryReviewStatus, restoreDirectoryReview } from '@/services/directoryReviews.api';
-import { getDirectoryReports, resolveDirectoryReport } from '@/services/directoryReports.api';
-import { getDirectoryListings, updateDirectoryListing } from '@/services/directoryListings.api';
+} from '@/directoryCategories.api';
+import { getDirectoryReviews, updateDirectoryReviewStatus, restoreDirectoryReview } from '@/directoryReviews.api';
+import { getDirectoryReports, resolveDirectoryReport } from '@/directoryReports.api';
+import { getDirectoryListings, updateDirectoryListing } from '@/directoryListings.api';
 import {
   fetchDirectoryCategoriesStart,
   fetchDirectoryCategoriesSuccess,
@@ -49,13 +49,13 @@ import {
   fetchDirectoryAuditLogsFailure,
   UpdateActionPayload,
   UpdateReviewStatusActionPayload,
-  UpdateListingActionPayload,
 } from './directory.slice';
-import { DirectoryCategory, CreateDirectoryCategoryPayload } from '@/types/directoryCategory';
-import { DirectoryReview, DirectoryReviewStatus } from '@/types/directoryReview';
-import { DirectoryReport, DirectoryReportStatus as ReportStatus, ResolveReportPayload } from '@/types/directoryReport';
-import { DirectoryListing, DirectoryListingStatus as ListingStatus } from '@/types/directoryListing';
-import { DirectoryAnalytics, DirectoryAuditLog } from '@/types/directoryMeta';
+import { DirectoryCategory, CreateDirectoryCategoryPayload } from '@/directoryCategory';
+import { DirectoryReview, DirectoryReviewStatus } from '@/directoryReview';
+import { DirectoryReport, DirectoryReportStatus as ReportStatus, ResolveReportPayload } from '@/directoryReport';
+import { DirectoryListing, DirectoryListingStatus as ListingStatus, UpdateListingActionPayload } from '@/directoryListing';
+import { DirectoryAnalytics, DirectoryAuditLog } from '@/directoryMeta';
+import { getDirectoryAnalytics, getDirectoryAuditLogs } from './directoryMeta.api';
 
 function* fetchDirectoryCategoriesSaga(): Generator {
   try {
