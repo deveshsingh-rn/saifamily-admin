@@ -2,6 +2,11 @@ import { call, put, takeLatest } from 'redux-saga/effects';
 import { AxiosError, AxiosResponse } from 'axios';
 import api from '../../../services/api';
 import {
+  clearAuthSession,
+  readAuthSession,
+  writeAuthSession,
+} from '../../../services/authSession';
+import {
   sendOtpStart,
   sendOtpSuccess,
   sendOtpFailure,
@@ -40,29 +45,28 @@ function getErrorMessage(error: unknown): string {
 }
 
 function persistSession(response: AuthResponse): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  localStorage.setItem('accessToken', response.tokens.accessToken);
-  localStorage.setItem('refreshToken', response.tokens.refreshToken);
-  localStorage.setItem('authUserId', response.user.id);
-  localStorage.setItem('authRole', response.user.role);
-}
-
-function clearSession(): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('authUserId');
-  localStorage.removeItem('authRole');
+  writeAuthSession({
+    accessToken: response.tokens.accessToken,
+    refreshToken: response.tokens.refreshToken,
+    userId: response.user.id,
+    role: response.user.role,
+  });
 }
 
 function* clearSessionSaga(): Generator {
-  yield call(clearSession);
+  const session = readAuthSession();
+
+  try {
+    if (session?.refreshToken) {
+      yield call(api.post, '/api/auth/logout', {
+        refreshToken: session.refreshToken,
+      });
+    }
+  } catch {
+    // Local logout must still complete if server-side revocation is unavailable.
+  } finally {
+    yield call(clearAuthSession);
+  }
 }
 
 function* sendOtpSaga(action: ReturnType<typeof sendOtpStart>): Generator {

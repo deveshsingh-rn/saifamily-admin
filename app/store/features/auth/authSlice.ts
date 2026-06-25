@@ -6,6 +6,7 @@ interface AuthState {
   token: string | null;
   role: string | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
   loading: boolean;
   error: string | null;
   registrationSuccess: boolean;
@@ -16,6 +17,7 @@ const initialState: AuthState = {
   token: null,
   role: null,
   isAuthenticated: false,
+  isInitialized: false,
   loading: false,
   error: null,
   registrationSuccess: false,
@@ -98,11 +100,22 @@ const authSlice = createSlice({
     },
 
     // General actions
+    hydrateAuth(
+      state,
+      action: PayloadAction<{ userId: string; token: string; role: string } | null>,
+    ) {
+      state.userId = action.payload?.userId ?? null;
+      state.token = action.payload?.token ?? null;
+      state.role = action.payload?.role ?? null;
+      state.isAuthenticated = Boolean(action.payload);
+      state.isInitialized = true;
+    },
     logout(state) {
       state.userId = null;
       state.token = null;
       state.role = null;
       state.isAuthenticated = false;
+      state.isInitialized = true;
       state.loading = false;
       state.error = null;
       state.registrationSuccess = false;
@@ -127,11 +140,13 @@ export const {
   registerSuccess,
   registerFailure,
   clearRegistrationSuccess,
+  hydrateAuth,
   logout,
   clearAuthError,
 } = authSlice.actions;
 
 export const selectIsAuthenticated = (state: RootState) => state.auth.isAuthenticated;
+export const selectAuthInitialized = (state: RootState) => state.auth.isInitialized;
 export const selectAuthLoading = (state: RootState) => state.auth.loading;
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectUser = (state: RootState) => state.auth.userId;

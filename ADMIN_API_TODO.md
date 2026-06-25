@@ -34,6 +34,10 @@ Last audit: June 25, 2026
 - [x] Authenticated role is `super_admin`.
 - [x] All 14 safe admin GET endpoints return HTTP `200`.
 - [x] A protected admin request without a token returns HTTP `401`.
+- [x] Refresh-token rotation returns HTTP `200`.
+- [x] A rotated access token authorizes protected admin requests.
+- [x] Logout revokes the refresh token.
+- [x] Reusing a revoked refresh token returns HTTP `401`.
 - [ ] Run mutation tests only with disposable fixtures.
 
 ## Phase 1 — Authentication and authorization
@@ -43,10 +47,14 @@ Last audit: June 25, 2026
   - Store `tokens.accessToken` and `tokens.refreshToken`.
   - Store `user.id` and `user.role`.
   - Reject non-admin roles in the admin frontend.
-- [~] Add `Authorization: Bearer <accessToken>` to protected API requests.
-- [~] Clear access token, refresh token, user ID, and role on logout.
-- [ ] Restore an authenticated session after a browser refresh.
-- [ ] Implement refresh-token handling and one-time retry for expired access tokens.
+- [x] Add `Authorization: Bearer <accessToken>` to protected API requests.
+- [x] Clear access token, refresh token, user ID, and role on logout.
+- [~] Restore an authenticated session after a browser refresh.
+  - Redux hydration is implemented; browser navigation still needs UI verification.
+- [x] Implement refresh-token handling and one-time retry for expired access tokens.
+  - Concurrent `401` responses share one refresh request.
+  - Failed refresh clears local authentication and emits a session-expired event.
+- [x] Revoke the refresh token through `POST /api/auth/logout`.
 - [x] Verify the backend returns `401` when the access token is missing.
 - [ ] Verify the frontend redirects to `/login` after a `401`.
 - [ ] Verify `403` handling displays an authorization error without retry loops.
@@ -198,6 +206,9 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [x] Add a reusable, non-destructive admin API smoke-test script:
   - Run `node scripts/test-admin-read-api.mjs`.
   - Override local defaults with `API_BASE_URL`, `ADMIN_MOBILE_NUMBER`, `ADMIN_OTP`, and `ADMIN_ORIGIN`.
+- [x] Add an authentication lifecycle test:
+  - Run `node scripts/test-admin-auth-lifecycle.mjs`.
+  - Covers login, token rotation, protected access, logout, and revoked-token rejection.
 - [ ] Create shared typed API contracts for:
   - Paginated responses.
   - API errors.

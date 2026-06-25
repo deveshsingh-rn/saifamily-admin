@@ -3,21 +3,25 @@
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useRouter } from 'next/navigation';
-import { selectIsAuthenticated } from './features/auth/authSlice';
+import {
+  selectAuthInitialized,
+  selectIsAuthenticated,
+} from './features/auth/authSlice';
 
-const withAuth = (WrappedComponent: React.ComponentType) => {
-  const AuthComponent = (props: any) => {
+const withAuth = <Props extends object>(WrappedComponent: React.ComponentType<Props>) => {
+  const AuthComponent = (props: Props) => {
     const isAuthenticated = useSelector(selectIsAuthenticated);
+    const isInitialized = useSelector(selectAuthInitialized);
     const router = useRouter();
 
     useEffect(() => {
-      if (!isAuthenticated) {
+      if (isInitialized && !isAuthenticated) {
         router.replace('/login');
       }
-    }, [isAuthenticated, router]);
+    }, [isAuthenticated, isInitialized, router]);
 
-    if (!isAuthenticated) {
-      return null; // or a loading spinner
+    if (!isInitialized || !isAuthenticated) {
+      return null;
     }
 
     return <WrappedComponent {...props} />;
