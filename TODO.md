@@ -69,8 +69,8 @@ The work is broken down into four major phases to provide a structured approach.
     *   Implement list, create (`POST /api/admin/categories`), and update (`PATCH /api/admin/categories/:category`) functionality for "Experience" categories. [COMPLETED]
     *   Build forms for creating and editing categories. [COMPLETED]
 *   **3.4 Directory Management (New Feature - Admin Side)**:
-    *   **Redux/Saga**: Create `app/store/features/directory/directorySlice.ts` and `app/store/features/directory/directorySaga.ts`.
-    *   **Directory Categories**: Implement CRUD operations for Directory Categories (`POST /api/admin/directory/categories`, `PATCH /api/admin/directory/categories/:id`, `DELETE /api/admin/directory/categories/:id`).
+    *   **Redux/Saga**: Create `app/store/features/directory/directorySlice.ts` and `app/store/features/directory/directorySaga.ts`. [COMPLETED]
+    *   **Directory Categories**: Implement CRUD operations for Directory Categories (`POST /api/admin/directory/categories`, `PATCH /api/admin/directory/categories/:id`, `DELETE /api/admin/directory/categories/:id`). [COMPLETED]
     *   **Reviews Moderation**: Build UI for viewing and moderating Directory Reviews (`GET /api/admin/directory/reviews`). Implement actions to approve, reject, hide, and restore reviews.
     *   **Reports Moderation**: Build UI for viewing and resolving Directory Reports (`GET /api/admin/directory/reports`). Implement actions to resolve/dismiss reports.
     *   **Listing Moderation**: Build UI for viewing and managing Directory Listings (`GET /api/admin/directory/listings`). Implement actions to approve, reject, suspend, restore, verify, and unverify listings.
