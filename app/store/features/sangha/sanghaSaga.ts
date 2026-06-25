@@ -69,7 +69,7 @@ import { SanghaReport, ResolveSanghaReportPayload, SanghaReportStatus } from '@/
 import { SendAnnouncementPayload } from '@/sanghaAnnouncement';
 import { SanghaLiveStream } from '@/sanghaLiveStream';
 import { SanghaAnalytics, SanghaAuditLog } from '@/sanghaMeta';
-import { PaginatedResponse } from '@/types/api';
+import { PaginatedResponse } from '@/api';
 
 function* fetchSanghaGroupsSaga(): Generator {
   try {
