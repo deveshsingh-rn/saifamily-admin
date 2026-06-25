@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import withAuth from '../../store/withAuth';
 
 const DirectoryPage = () => {
   return (
@@ -44,4 +45,4 @@ const DirectoryPage = () => {
   );
 };
 
-export default DirectoryPage;
+export default withAuth(DirectoryPage);

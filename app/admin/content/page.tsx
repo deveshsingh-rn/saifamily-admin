@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchContentStart, selectContent, selectContentLoading, selectContentError } from '../../store/features/content/contentSlice';
+import withAuth from '../../store/withAuth';
 
 const ContentPage = () => {
   const dispatch = useDispatch();
@@ -43,4 +44,4 @@ const ContentPage = () => {
   );
 };
 
-export default ContentPage;
+export default withAuth(ContentPage);

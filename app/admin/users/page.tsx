@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUsersStart, selectUsers, selectUsersLoading, selectUsersError } from '../../store/features/users/usersSlice';
+import withAuth from '../../store/withAuth';
 
 const UsersPage = () => {
   const dispatch = useDispatch();
@@ -45,4 +46,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default withAuth(UsersPage);

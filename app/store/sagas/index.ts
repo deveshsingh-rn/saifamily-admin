@@ -3,6 +3,7 @@ import { watchFetchUsers } from '../features/users/usersSaga';
 import { watchFetchContent } from '../features/content/contentSaga';
 import { watchFetchCategories } from '../features/categories/categoriesSaga';
 import { watchFetchSanghaGroups } from '../features/sangha/sanghaSaga';
+import { watchAuth } from '../features/auth/authSaga';
 
 export default function* rootSaga() {
   yield all([
@@ -10,5 +11,6 @@ export default function* rootSaga() {
     watchFetchContent(),
     watchFetchCategories(),
     watchFetchSanghaGroups(),
+    watchAuth(),
   ]);
 }

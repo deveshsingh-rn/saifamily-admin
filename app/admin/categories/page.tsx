@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategoriesStart, selectCategories, selectCategoriesLoading, selectCategoriesError } from '../../store/features/categories/categoriesSlice';
+import withAuth from '../../store/withAuth';
 
 const CategoriesPage = () => {
   const dispatch = useDispatch();
@@ -41,4 +42,4 @@ const CategoriesPage = () => {
   );
 };
 
-export default CategoriesPage;
+export default withAuth(CategoriesPage);

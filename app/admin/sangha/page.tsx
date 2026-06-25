@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSanghaGroupsStart, selectSanghaGroups, selectSanghaGroupsLoading, selectSanghaGroupsError } from '../../store/features/sangha/sanghaSlice';
+import withAuth from '../../store/withAuth';
 
 const SanghaPage = () => {
   const dispatch = useDispatch();
@@ -45,4 +46,4 @@ const SanghaPage = () => {
   );
 };
 
-export default SanghaPage;
+export default withAuth(SanghaPage);
