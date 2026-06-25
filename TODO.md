@@ -41,21 +41,19 @@ The work is broken down into four major phases to provide a structured approach.
     *   Verify it handles redirection for unauthenticated users.
     *   **TODO**: Implement a robust token refreshing mechanism. This involves creating an Axios interceptor to catch 401 errors, dispatching a `refreshToken` action, and retrying the original request.
 
-### Phase 2: Admin Dashboard Foundation
+### Phase 2: Admin Dashboard Foundation [COMPLETED]
 
 **Goal**: Build the basic structure and reusable components for the admin section.
 
-*   **2.1 Admin Layout**:
+*   **2.1 Admin Layout**: [COMPLETED]
     *   Design and build the main admin layout in `app/admin/layout.tsx`. This should include a sidebar or navigation menu that links to all administrative sections (Users, Content, Categories, Directory, Sangha).
     *   Implement basic header/footer for the admin panel.
-*   **2.2 Reusable Components**:
+*   **2.2 Reusable Components**: [COMPLETED]
     *   Create a generic `Table` component suitable for displaying paginated lists of data across various admin sections.
     *   Create a `Pagination` component that integrates with the table for server-side pagination.
-    *   Consider other common UI elements for admin panels (e.g., search bars, filters, action buttons).
-*   **2.3 Basic Admin Pages**:
-    *   For each existing admin page (e.g., `app/admin/users/page.tsx`, `app/admin/content/page.tsx`), implement the basic functionality to:
-        *   Fetch a paginated list of items using the respective `GET` endpoints (e.g., `GET /api/admin/users`).
-        *   Display the data in the `Table` component.
+*   **2.3 Basic Admin Pages**: [COMPLETED]
+    *   Implement the basic functionality for the `Users` page to fetch and display a paginated list of users.
+    *   **NOTE**: The pattern established for the `Users` page (slice, saga, page component with Table and Pagination) should be replicated for the other admin sections (`Content`, `Categories`, etc.) as we implement them.
 
 ### Phase 3: Complete Admin Functionality
 
