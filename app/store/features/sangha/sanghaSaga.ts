@@ -5,6 +5,9 @@ import {
   createSanghaGroup,
   updateSanghaGroup,
   deleteSanghaGroup,
+  getGroupMembers,
+  updateMemberRole,
+  removeMember,
 } from '@/services/sangha.api';
 import {
   fetchSanghaGroupsStart,
@@ -19,9 +22,20 @@ import {
   deleteSanghaGroupStart,
   deleteSanghaGroupSuccess,
   deleteSanghaGroupFailure,
+  fetchGroupMembersStart,
+  fetchGroupMembersSuccess,
+  fetchGroupMembersFailure,
+  updateGroupMemberRoleStart,
+  updateGroupMemberRoleSuccess,
+  updateGroupMemberRoleFailure,
+  removeGroupMemberStart,
+  removeGroupMemberSuccess,
+  removeGroupMemberFailure,
   UpdateGroupActionPayload,
+  RemoveMemberActionPayload,
 } from './sanghaSlice';
 import { SanghaGroup, CreateSanghaGroupPayload } from '@/types/sanghaGroup';
+import { SanghaMember, UpdateMemberActionPayload } from '@/types/sanghaMember';
 
 function* fetchSanghaGroupsSaga(): Generator {
   try {
@@ -61,11 +75,44 @@ function* deleteSanghaGroupSaga(action: PayloadAction<string>): Generator {
   }
 }
 
+function* fetchGroupMembersSaga(action: PayloadAction<string>): Generator {
+  try {
+    const groupId = action.payload;
+    const members = (yield call(getGroupMembers, groupId)) as SanghaMember[];
+    yield put(fetchGroupMembersSuccess(members));
+  } catch (error: any) {
+    yield put(fetchGroupMembersFailure(error.message));
+  }
+}
+
+function* updateGroupMemberRoleSaga(action: PayloadAction<UpdateMemberActionPayload>): Generator {
+  try {
+    const { groupId, memberId, payload } = action.payload;
+    const updatedMember = (yield call(updateMemberRole, groupId, memberId, payload)) as SanghaMember;
+    yield put(updateGroupMemberRoleSuccess(updatedMember));
+  } catch (error: any) {
+    yield put(updateGroupMemberRoleFailure(error.message));
+  }
+}
+
+function* removeGroupMemberSaga(action: PayloadAction<RemoveMemberActionPayload>): Generator {
+  try {
+    const { groupId, memberId } = action.payload;
+    yield call(removeMember, groupId, memberId);
+    yield put(removeGroupMemberSuccess(memberId));
+  } catch (error: any) {
+    yield put(removeGroupMemberFailure(error.message));
+  }
+}
+
 export function* sanghaSaga() {
   yield all([
     takeLatest(fetchSanghaGroupsStart.type, fetchSanghaGroupsSaga),
     takeLatest(addSanghaGroupStart.type, addSanghaGroupSaga),
     takeLatest(updateSanghaGroupStart.type, updateSanghaGroupSaga),
     takeLatest(deleteSanghaGroupStart.type, deleteSanghaGroupSaga),
+    takeLatest(fetchGroupMembersStart.type, fetchGroupMembersSaga),
+    takeLatest(updateGroupMemberRoleStart.type, updateGroupMemberRoleSaga),
+    takeLatest(removeGroupMemberStart.type, removeGroupMemberSaga),
   ]);
 }

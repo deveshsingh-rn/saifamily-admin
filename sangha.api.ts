@@ -4,6 +4,7 @@ import {
   CreateSanghaGroupPayload,
   UpdateSanghaGroupPayload,
 } from '@/types/sanghaGroup';
+import { SanghaMember, UpdateMemberRolePayload } from '@/types/sanghaMember';
 
 export const getSanghaGroups = async (): Promise<SanghaGroup[]> => {
   try {
@@ -11,6 +12,43 @@ export const getSanghaGroups = async (): Promise<SanghaGroup[]> => {
     return response.data.groups || [];
   } catch (error) {
     console.error('Error fetching Sangha groups:', error);
+    throw error;
+  }
+};
+
+export const getGroupMembers = async (groupId: string): Promise<SanghaMember[]> => {
+  try {
+    // Using the public-facing endpoint as it's suitable for admin use too.
+    const response = await axiosInstance.get(`/api/sangha/groups/${groupId}/members`);
+    return response.data.members || [];
+  } catch (error) {
+    console.error(`Error fetching members for group ${groupId}:`, error);
+    throw error;
+  }
+};
+
+export const updateMemberRole = async (
+  groupId: string,
+  memberId: string,
+  payload: UpdateMemberRolePayload
+): Promise<SanghaMember> => {
+  try {
+    const response = await axiosInstance.patch(
+      `/api/admin/sangha/groups/${groupId}/members/${memberId}`,
+      payload
+    );
+    return response.data.member;
+  } catch (error) {
+    console.error(`Error updating role for member ${memberId} in group ${groupId}:`, error);
+    throw error;
+  }
+};
+
+export const removeMember = async (groupId: string, memberId: string): Promise<void> => {
+  try {
+    await axiosInstance.delete(`/api/admin/sangha/groups/${groupId}/members/${memberId}`);
+  } catch (error) {
+    console.error(`Error removing member ${memberId} from group ${groupId}:`, error);
     throw error;
   }
 };

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -127,6 +128,9 @@ export default function SanghaGroupsPage() {
                   <TableCell>{group.privacy}</TableCell>
                   <TableCell>{group._count?.members || 0}</TableCell>
                   <TableCell className="text-right space-x-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/admin/sangha/groups/${group.id}/members`}>Members</Link>
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleOpenDialog(group)}>Edit</Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
