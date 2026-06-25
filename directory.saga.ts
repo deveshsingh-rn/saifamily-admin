@@ -7,6 +7,7 @@ import {
   deleteDirectoryCategory,
 } from '@/services/directoryCategories.api';
 import { getDirectoryReviews, updateDirectoryReviewStatus, restoreDirectoryReview } from '@/services/directoryReviews.api';
+import { getDirectoryReports, resolveDirectoryReport } from '@/services/directoryReports.api';
 import {
   fetchDirectoryCategoriesStart,
   fetchDirectoryCategoriesSuccess,
@@ -27,11 +28,18 @@ import {
   restoreDirectoryReviewStart,
   updateDirectoryReviewStatusSuccess,
   updateDirectoryReviewStatusFailure,
+  fetchDirectoryReportsStart,
+  fetchDirectoryReportsSuccess,
+  fetchDirectoryReportsFailure,
+  resolveDirectoryReportStart,
+  resolveDirectoryReportSuccess,
+  resolveDirectoryReportFailure,
   UpdateActionPayload,
   UpdateReviewStatusActionPayload,
 } from './directory.slice';
 import { DirectoryCategory, CreateDirectoryCategoryPayload } from '@/types/directoryCategory';
 import { DirectoryReview, DirectoryReviewStatus } from '@/types/directoryReview';
+import { DirectoryReport, DirectoryReportStatus as ReportStatus, ResolveReportPayload } from '@/types/directoryReport';
 
 function* fetchDirectoryCategoriesSaga(): Generator {
   try {
@@ -100,6 +108,25 @@ function* restoreDirectoryReviewSaga(action: PayloadAction<string>): Generator {
   }
 }
 
+function* fetchDirectoryReportsSaga(action: PayloadAction<ReportStatus | undefined>): Generator {
+  try {
+    const reports = (yield call(getDirectoryReports, action.payload)) as DirectoryReport[];
+    yield put(fetchDirectoryReportsSuccess(reports));
+  } catch (error: any) {
+    yield put(fetchDirectoryReportsFailure(error.message));
+  }
+}
+
+function* resolveDirectoryReportSaga(action: PayloadAction<ResolveReportPayload>): Generator {
+  try {
+    const { reportId, status, note } = action.payload;
+    const updatedReport = (yield call(resolveDirectoryReport, reportId, status, note)) as DirectoryReport;
+    yield put(resolveDirectoryReportSuccess(updatedReport));
+  } catch (error: any) {
+    yield put(resolveDirectoryReportFailure(error.message));
+  }
+}
+
 export function* directorySaga() {
   yield all([
     takeLatest(fetchDirectoryCategoriesStart.type, fetchDirectoryCategoriesSaga),
@@ -109,5 +136,7 @@ export function* directorySaga() {
     takeLatest(fetchDirectoryReviewsStart.type, fetchDirectoryReviewsSaga),
     takeLatest(updateDirectoryReviewStatusStart.type, updateDirectoryReviewStatusSaga),
     takeLatest(restoreDirectoryReviewStart.type, restoreDirectoryReviewSaga),
+    takeLatest(fetchDirectoryReportsStart.type, fetchDirectoryReportsSaga),
+    takeLatest(resolveDirectoryReportStart.type, resolveDirectoryReportSaga),
   ]);
 }

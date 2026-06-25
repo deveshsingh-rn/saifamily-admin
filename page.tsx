@@ -4,9 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import {
-  fetchDirectoryReviewsStart,
-  updateDirectoryReviewStatusStart,
-  restoreDirectoryReviewStart,
+  fetchDirectoryReportsStart,
+  resolveDirectoryReportStart,
 } from '@/store/directory/directory.slice';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,66 +17,78 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { DirectoryReviewStatus } from '@/types/directoryReview';
-import { MoreHorizontal } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { DirectoryReportStatus } from '@/types/directoryReport';
 
 const statusColors: Record<
-  DirectoryReviewStatus,
+  DirectoryReportStatus,
   'default' | 'secondary' | 'destructive' | 'outline'
 > = {
   pending: 'secondary',
-  approved: 'default',
-  rejected: 'destructive',
-  hidden: 'outline',
+  resolved: 'default',
+  dismissed: 'outline',
 };
 
-export default function DirectoryReviewsPage() {
+export default function DirectoryReportsPage() {
   const dispatch = useDispatch();
-  const { reviews, loading, submitting, error } = useSelector(
+  const { reports, loading, submitting, error } = useSelector(
     (state: RootState) => state.directory
   );
 
   const [statusFilter, setStatusFilter] = useState<
-    DirectoryReviewStatus | 'all'
+    DirectoryReportStatus | 'all'
   >('pending');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [resolutionNote, setResolutionNote] = useState('');
 
   useEffect(() => {
     const filter = statusFilter === 'all' ? undefined : statusFilter;
-    dispatch(fetchDirectoryReviewsStart(filter));
+    dispatch(fetchDirectoryReportsStart(filter));
   }, [dispatch, statusFilter]);
 
-  const handleStatusChange = (
-    reviewId: string,
-    status: DirectoryReviewStatus
-  ) => {
-    dispatch(updateDirectoryReviewStatusStart({ reviewId, status }));
+  const openResolveDialog = (reportId: string) => {
+    setSelectedReportId(reportId);
+    setResolutionNote('');
+    setIsDialogOpen(true);
   };
 
-  const handleRestore = (reviewId: string) => {
-    dispatch(restoreDirectoryReviewStart(reviewId));
+  const handleResolve = (status: 'resolved' | 'dismissed') => {
+    if (!selectedReportId) return;
+    dispatch(
+      resolveDirectoryReportStart({
+        reportId: selectedReportId,
+        status,
+        note: resolutionNote,
+      })
+    );
+    setIsDialogOpen(false);
   };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Moderate Directory Reviews</h1>
+        <h1 className="text-2xl font-bold">Moderate Directory Reports</h1>
         <div className="w-[180px]">
           <Select
             value={statusFilter}
-            onValueChange={(value: DirectoryReviewStatus | 'all') =>
+            onValueChange={(value: DirectoryReportStatus | 'all') =>
               setStatusFilter(value)
             }
           >
@@ -87,15 +98,14 @@ export default function DirectoryReviewsPage() {
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="hidden">Hidden</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+              <SelectItem value="dismissed">Dismissed</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
-      {loading && <p>Loading reviews...</p>}
+      {loading && <p>Loading reports...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
 
       {!loading && !error && (
@@ -104,56 +114,40 @@ export default function DirectoryReviewsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Listing</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Comment</TableHead>
+                <TableHead>Reported By</TableHead>
+                <TableHead>Reason</TableHead>
+                <TableHead>Details</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reviews.map((review) => (
-                <TableRow key={review.id}>
+              {reports.map((report) => (
+                <TableRow key={report.id}>
                   <TableCell className="font-medium">
-                    {review.listing?.title || 'N/A'}
+                    {report.listing?.businessName || 'N/A'}
                   </TableCell>
-                  <TableCell>{review.user?.name || 'N/A'}</TableCell>
-                  <TableCell>{review.rating}/5</TableCell>
+                  <TableCell>{report.user?.name || 'N/A'}</TableCell>
+                  <TableCell>{report.reason}</TableCell>
                   <TableCell className="max-w-xs truncate">
-                    {review.comment}
+                    {report.details || '-'}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={statusColors[review.status]}>
-                      {review.status}
+                    <Badge variant={statusColors[report.status]}>
+                      {report.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="h-8 w-8 p-0"
-                          disabled={submitting}
-                        >
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {review.status !== 'approved' && (
-                          <DropdownMenuItem onClick={() => handleStatusChange(review.id, 'approved')}>Approve</DropdownMenuItem>
-                        )}
-                        {review.status !== 'rejected' && (
-                          <DropdownMenuItem onClick={() => handleStatusChange(review.id, 'rejected')}>Reject</DropdownMenuItem>
-                        )}
-                        {review.status !== 'hidden' && (
-                          <DropdownMenuItem onClick={() => handleStatusChange(review.id, 'hidden')}>Hide</DropdownMenuItem>
-                        )}
-                        {(review.status === 'hidden' || review.status === 'rejected') && (
-                          <DropdownMenuItem onClick={() => handleRestore(review.id)}>Restore (Approve)</DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {report.status === 'pending' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openResolveDialog(report.id)}
+                        disabled={submitting}
+                      >
+                        Resolve
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -161,6 +155,34 @@ export default function DirectoryReviewsPage() {
           </Table>
         </div>
       )}
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Resolve Report</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            <Label htmlFor="note">Resolution Note (Optional)</Label>
+            <Textarea
+              id="note"
+              value={resolutionNote}
+              onChange={(e) => setResolutionNote(e.target.value)}
+              placeholder="Add a note for internal records..."
+            />
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="ghost">Cancel</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={() => handleResolve('dismissed')} disabled={submitting}>
+              Dismiss
+            </Button>
+            <Button onClick={() => handleResolve('resolved')} disabled={submitting}>
+              Mark as Resolved
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
