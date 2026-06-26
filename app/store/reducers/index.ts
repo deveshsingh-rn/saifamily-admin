@@ -3,6 +3,7 @@ import usersReducer from '../features/users/usersSlice';
 import contentReducer from '../features/content/contentSlice';
 import categoriesReducer from '../features/categories/categoriesSlice';
 import sanghaReducer from '../features/sangha/sanghaSlice';
+import directoryReducer from '../features/directory/directorySlice';
 import authReducer from '../features/auth/authSlice';
 import accountReducer from '../features/account/accountSlice';
 
@@ -11,6 +12,7 @@ const rootReducer = combineReducers({
   content: contentReducer,
   categories: categoriesReducer,
   sangha: sanghaReducer,
+  directory: directoryReducer,
   auth: authReducer,
   account: accountReducer,
 });

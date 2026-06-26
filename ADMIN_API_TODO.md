@@ -158,12 +158,14 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [~] `POST /api/admin/directory/reviews/:id/restore`
   - Create or select disposable reviews for each transition.
   - Verify invalid status transitions and missing review IDs.
+  - Frontend Redux Saga/UI integration is implemented with confirmation dialogs and success/error feedback.
 
 ### Directory report moderation
 
 - [~] `POST /api/admin/directory/reports/:id/resolve`
   - Test `resolved` and `dismissed`.
   - Verify invalid status validation.
+  - Frontend Redux Saga/UI integration is implemented with confirmation dialogs and success/error feedback.
 
 ### Directory listing moderation
 
@@ -175,6 +177,7 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [~] `POST /api/admin/directory/listings/:id/unverify`
   - Use separate disposable listings or reset fixtures between transitions.
   - Verify returned listing status and verification status after every action.
+  - Frontend Redux Saga/UI integration is implemented with confirmation dialogs and success/error feedback.
 
 ### Sangha group management
 
@@ -220,10 +223,11 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Paginated responses.
   - API errors.
   - Admin user, content, category, directory, and Sangha resources.
-  - Shared contracts now cover offset pagination, API errors, admin users, content, and experience categories.
-  - Directory and Sangha resources still need to be migrated into the shared contract layer.
+  - Shared contracts now cover offset pagination, API errors, admin users, content, experience categories, and Directory moderation resources.
+  - Sangha resources still need to be migrated into the shared contract layer.
 - [~] Consolidate duplicate root-level and `app/store/features/*` API/slice/saga files.
   - Removed stale misplaced page files that were compiled as duplicate routes.
+  - Active app store now includes Directory reducer/saga and Sangha saga.
   - Legacy root-level admin sagas/slices are lint-safe but still need a final keep/delete decision during Directory/Sangha migration.
 - [x] Fix current TypeScript errors in the Sangha feature and missing imports.
   - Corrected Sangha model imports.
@@ -238,7 +242,8 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [~] Add server-side pagination, debounced search, filters, empty states, and retry states.
   - Users now use backend `limit`/`offset`, debounced search, active/inactive filters, loading/error/empty states, and status confirmation.
   - Content uses backend `limit`/`offset`, category filtering, loading/error/empty states, and delete confirmation.
-  - Directory and Sangha moderation pages still need full production UI flows.
+  - Directory now uses backend `limit`/`offset`, status filters, debounced search, analytics, audit logs, loading/error/empty states, and confirmation-gated moderation actions.
+  - Sangha moderation pages still need full production UI flows.
 - [x] Complete the Content Management list UI:
   - Uses the backend `{ experiences, pagination }` contract.
   - Server-side offset pagination and category filtering.
@@ -252,7 +257,8 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Reversible API lifecycle test preserves original data.
 - [~] Add confirmation dialogs for destructive and moderation actions.
   - Users status changes and content deletion require confirmation.
-  - Directory/Sangha moderation actions still need confirmation dialogs before fixture-backed enablement.
+  - Directory moderation actions require confirmation.
+  - Sangha moderation actions still need confirmation dialogs before fixture-backed enablement.
 - [x] Add role-based navigation and route authorization.
   - `withAuth` now enforces admin roles and renders a `403 Forbidden` screen for unauthorized roles.
   - Admin layout filters navigation by role.
