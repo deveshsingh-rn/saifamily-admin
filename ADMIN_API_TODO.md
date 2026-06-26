@@ -190,18 +190,22 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [~] `POST /api/admin/sangha/groups/:id/verify`
 - [~] `POST /api/admin/sangha/groups/:id/unverify`
   - Verify official status transitions.
+  - Frontend Redux Saga/UI integration is implemented for archive, verify, and unverify with confirmation dialogs and success/error feedback.
 - [~] `PATCH /api/admin/sangha/groups/:id/members/:memberId`
   - Test supported member-role changes.
 - [~] `DELETE /api/admin/sangha/groups/:id/members/:memberId`
   - Use a disposable group member.
+  - Redux Saga integration is implemented; UI enablement is pending disposable member fixtures.
 
 ### Sangha moderation and communication
 
 - [~] `POST /api/admin/sangha/reports/:id/resolve`
   - Verify resolution status and optional moderation note.
+  - Frontend Redux Saga/UI integration is implemented with confirmation dialogs and success/error feedback.
 - [~] `POST /api/admin/sangha/announcements`
   - Send only to a disposable test group.
   - Verify required fields and authorization.
+  - Redux Saga integration is implemented; UI enablement is pending disposable group fixtures.
 
 ### Sangha live-stream management
 
@@ -210,6 +214,7 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [ ] `DELETE /api/admin/sangha/live-streams/:id/chat/:messageId`
   - Create disposable stream fixtures before testing.
   - Confirm destructive actions require explicit UI confirmation.
+  - Frontend Redux Saga/UI integration is implemented for ending streams and removing recordings with confirmation dialogs and success/error feedback.
 
 ## Phase 4 — Frontend completion
 
@@ -223,8 +228,7 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Paginated responses.
   - API errors.
   - Admin user, content, category, directory, and Sangha resources.
-  - Shared contracts now cover offset pagination, API errors, admin users, content, experience categories, and Directory moderation resources.
-  - Sangha resources still need to be migrated into the shared contract layer.
+  - Shared contracts now cover offset pagination, API errors, admin users, content, experience categories, Directory moderation resources, and Sangha admin resources.
 - [~] Consolidate duplicate root-level and `app/store/features/*` API/slice/saga files.
   - Removed stale misplaced page files that were compiled as duplicate routes.
   - Active app store now includes Directory reducer/saga and Sangha saga.
@@ -243,7 +247,7 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Users now use backend `limit`/`offset`, debounced search, active/inactive filters, loading/error/empty states, and status confirmation.
   - Content uses backend `limit`/`offset`, category filtering, loading/error/empty states, and delete confirmation.
   - Directory now uses backend `limit`/`offset`, status filters, debounced search, analytics, audit logs, loading/error/empty states, and confirmation-gated moderation actions.
-  - Sangha moderation pages still need full production UI flows.
+  - Sangha now uses backend `limit`/`offset`, status filters, analytics, audit logs, loading/error/empty states, and confirmation-gated moderation/live-stream actions.
 - [x] Complete the Content Management list UI:
   - Uses the backend `{ experiences, pagination }` contract.
   - Server-side offset pagination and category filtering.
@@ -258,7 +262,7 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [~] Add confirmation dialogs for destructive and moderation actions.
   - Users status changes and content deletion require confirmation.
   - Directory moderation actions require confirmation.
-  - Sangha moderation actions still need confirmation dialogs before fixture-backed enablement.
+  - Sangha group, report, and live-stream moderation actions require confirmation.
 - [x] Add role-based navigation and route authorization.
   - `withAuth` now enforces admin roles and renders a `403 Forbidden` screen for unauthorized roles.
   - Admin layout filters navigation by role.

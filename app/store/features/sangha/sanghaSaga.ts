@@ -1,187 +1,244 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
-import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosResponse } from 'axios';
+import api from '../../../services/api';
 import { getApiErrorMessage } from '../../../services/apiError';
+import { showToast } from '../../../services/toast';
 import {
-  getSanghaGroups,
-  createSanghaGroup,
-  updateSanghaGroup,
-  deleteSanghaGroup,
-  verifySanghaGroup,
-  unverifySanghaGroup,
-  getSanghaReports,
-  resolveSanghaReport,
-  sendSanghaAnnouncement,
-  getLiveStreams,
-  endLiveStream,
-  removeLiveStreamRecording,
-  getSanghaAnalytics,
-  getSanghaAuditLogs,
-  getGroupMembers,
-  updateMemberRole,
-  removeMember,
-} from '@/sangha.api';
+  AdminSanghaAnalytics,
+  AdminSanghaGroup,
+  AdminSanghaLiveStream,
+  AdminSanghaReport,
+  SanghaAuditLogsResponse,
+  SanghaGroupsResponse,
+  SanghaLiveStreamsResponse,
+  SanghaReportsResponse,
+} from '../../../types/adminApi';
 import {
-  fetchSanghaGroupsStart,
-  fetchSanghaGroupsSuccess,
-  fetchSanghaGroupsFailure,
+  addSanghaGroupFailure,
   addSanghaGroupStart,
   addSanghaGroupSuccess,
-  addSanghaGroupFailure,
-  updateSanghaGroupStart,
-  updateSanghaGroupSuccess,
-  updateSanghaGroupFailure,
+  deleteSanghaGroupFailure,
   deleteSanghaGroupStart,
   deleteSanghaGroupSuccess,
-  deleteSanghaGroupFailure,
-  verifyGroupStart,
-  unverifyGroupStart,
-  fetchSanghaReportsStart,
-  fetchSanghaReportsSuccess,
-  fetchSanghaReportsFailure,
-  resolveSanghaReportStart,
-  resolveSanghaReportSuccess,
-  resolveSanghaReportFailure,
-  sendAnnouncementStart,
-  sendAnnouncementSuccess,
-  sendAnnouncementFailure,
+  endLiveStreamStart,
+  endLiveStreamSuccess,
+  fetchLiveStreamsFailure,
   fetchLiveStreamsStart,
   fetchLiveStreamsSuccess,
-  fetchLiveStreamsFailure,
-  endLiveStreamStart, endLiveStreamSuccess,
-  removeLiveStreamRecordingStart, removeLiveStreamRecordingSuccess,
+  fetchSanghaAnalyticsFailure,
+  fetchSanghaAnalyticsStart,
+  fetchSanghaAnalyticsSuccess,
+  fetchSanghaAuditLogsFailure,
+  fetchSanghaAuditLogsStart,
+  fetchSanghaAuditLogsSuccess,
+  fetchSanghaGroupsFailure,
+  fetchSanghaGroupsStart,
+  fetchSanghaGroupsSuccess,
+  fetchSanghaReportsFailure,
+  fetchSanghaReportsStart,
+  fetchSanghaReportsSuccess,
   liveStreamActionFailure,
-  fetchSanghaAnalyticsStart, fetchSanghaAnalyticsSuccess, fetchSanghaAnalyticsFailure,
-  fetchSanghaAuditLogsStart, fetchSanghaAuditLogsSuccess, fetchSanghaAuditLogsFailure,
-  fetchGroupMembersStart,
-  fetchGroupMembersSuccess,
-  fetchGroupMembersFailure,
-  updateGroupMemberRoleStart,
-  updateGroupMemberRoleSuccess,
-  updateGroupMemberRoleFailure,
+  removeGroupMemberFailure,
   removeGroupMemberStart,
   removeGroupMemberSuccess,
-  removeGroupMemberFailure,
-  UpdateGroupActionPayload,
-  RemoveMemberActionPayload,
+  removeLiveStreamRecordingStart,
+  removeLiveStreamRecordingSuccess,
+  resolveSanghaReportFailure,
+  resolveSanghaReportStart,
+  resolveSanghaReportSuccess,
+  sendAnnouncementFailure,
+  sendAnnouncementStart,
+  sendAnnouncementSuccess,
+  unverifyGroupStart,
+  updateGroupMemberRoleFailure,
+  updateGroupMemberRoleStart,
+  updateGroupMemberRoleSuccess,
+  updateSanghaGroupFailure,
+  updateSanghaGroupStart,
+  updateSanghaGroupSuccess,
+  verifyGroupStart,
 } from './sanghaSlice';
-import { SanghaGroup, CreateSanghaGroupPayload } from '@/sanghaGroup';
-import { SanghaMember, UpdateMemberActionPayload } from '@/sanghaMember';
-import { SanghaReport, ResolveSanghaReportPayload, SanghaReportStatus } from '@/sanghaReport';
-import { SendAnnouncementPayload } from '@/sanghaAnnouncement';
-import { SanghaLiveStream } from '@/sanghaLiveStream';
-import { SanghaAnalytics, SanghaAuditLog } from '@/sanghaMeta';
-import { PaginatedResponse } from '@/api';
 
-function* fetchSanghaGroupsSaga(): Generator {
+interface GroupResponse {
+  group: AdminSanghaGroup;
+}
+interface ReportResponse {
+  report: AdminSanghaReport;
+}
+
+interface StreamResponse {
+  stream: AdminSanghaLiveStream;
+}
+
+function* fetchSanghaGroupsSaga(
+  action: ReturnType<typeof fetchSanghaGroupsStart>,
+): Generator {
   try {
-    const groups = (yield call(getSanghaGroups)) as SanghaGroup[];
-    yield put(fetchSanghaGroupsSuccess(groups));
+    const response = (yield call(api.get, '/api/admin/sangha/groups', {
+      params: action.payload ?? { limit: 20, offset: 0 },
+    })) as AxiosResponse<SanghaGroupsResponse>;
+    yield put(fetchSanghaGroupsSuccess(response.data));
   } catch (error: unknown) {
     yield put(fetchSanghaGroupsFailure(getApiErrorMessage(error, 'Sangha groups request failed')));
   }
 }
 
-function* addSanghaGroupSaga(action: PayloadAction<CreateSanghaGroupPayload>): Generator {
+function* addSanghaGroupSaga(
+  action: ReturnType<typeof addSanghaGroupStart>,
+): Generator {
   try {
-    const newGroup = (yield call(createSanghaGroup, action.payload)) as SanghaGroup;
-    yield put(addSanghaGroupSuccess(newGroup));
+    const response = (yield call(
+      api.post,
+      '/api/admin/sangha/groups',
+      action.payload,
+    )) as AxiosResponse<GroupResponse>;
+    yield put(addSanghaGroupSuccess(response.data.group));
+    yield call(showToast, { title: 'Sangha group created', variant: 'success' });
   } catch (error: unknown) {
     yield put(addSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group create failed')));
   }
 }
 
-function* updateSanghaGroupSaga(action: PayloadAction<UpdateGroupActionPayload>): Generator {
+function* updateSanghaGroupSaga(
+  action: ReturnType<typeof updateSanghaGroupStart>,
+): Generator {
   try {
-    const { id, payload } = action.payload;
-    const updatedGroup = (yield call(updateSanghaGroup, id, payload)) as SanghaGroup;
-    yield put(updateSanghaGroupSuccess(updatedGroup));
+    const response = (yield call(
+      api.patch,
+      `/api/admin/sangha/groups/${action.payload.id}`,
+      action.payload.payload,
+    )) as AxiosResponse<GroupResponse>;
+    yield put(updateSanghaGroupSuccess(response.data.group));
+    yield call(showToast, { title: 'Sangha group updated', variant: 'success' });
   } catch (error: unknown) {
     yield put(updateSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group update failed')));
   }
 }
 
-function* deleteSanghaGroupSaga(action: PayloadAction<string>): Generator {
+function* deleteSanghaGroupSaga(
+  action: ReturnType<typeof deleteSanghaGroupStart>,
+): Generator {
   try {
-    const groupId = action.payload;
-    yield call(deleteSanghaGroup, groupId);
-    yield put(deleteSanghaGroupSuccess(groupId));
+    yield call(api.delete, `/api/admin/sangha/groups/${action.payload}`);
+    yield put(deleteSanghaGroupSuccess(action.payload));
+    yield call(showToast, { title: 'Sangha group archived', variant: 'success' });
   } catch (error: unknown) {
-    yield put(deleteSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group delete failed')));
+    yield put(deleteSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group archive failed')));
   }
 }
 
-function* verifyGroupSaga(action: PayloadAction<string>): Generator {
+function* verifyGroupSaga(
+  action: ReturnType<typeof verifyGroupStart>,
+): Generator {
   try {
-    const groupId = action.payload;
-    const updatedGroup = (yield call(verifySanghaGroup, groupId)) as SanghaGroup;
-    yield put(updateSanghaGroupSuccess(updatedGroup));
+    const response = (yield call(
+      api.post,
+      `/api/admin/sangha/groups/${action.payload}/verify`,
+      {},
+    )) as AxiosResponse<GroupResponse>;
+    yield put(updateSanghaGroupSuccess(response.data.group));
+    yield call(showToast, { title: 'Sangha group verified', variant: 'success' });
   } catch (error: unknown) {
     yield put(updateSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group verify failed')));
   }
 }
 
-function* unverifyGroupSaga(action: PayloadAction<string>): Generator {
+function* unverifyGroupSaga(
+  action: ReturnType<typeof unverifyGroupStart>,
+): Generator {
   try {
-    const groupId = action.payload;
-    const updatedGroup = (yield call(unverifySanghaGroup, groupId)) as SanghaGroup;
-    yield put(updateSanghaGroupSuccess(updatedGroup));
+    const response = (yield call(
+      api.post,
+      `/api/admin/sangha/groups/${action.payload}/unverify`,
+      {},
+    )) as AxiosResponse<GroupResponse>;
+    yield put(updateSanghaGroupSuccess(response.data.group));
+    yield call(showToast, { title: 'Sangha group unverified', variant: 'success' });
   } catch (error: unknown) {
     yield put(updateSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group unverify failed')));
   }
 }
 
-function* fetchSanghaReportsSaga(action: PayloadAction<SanghaReportStatus | undefined>): Generator {
+function* fetchSanghaReportsSaga(
+  action: ReturnType<typeof fetchSanghaReportsStart>,
+): Generator {
   try {
-    const reports = (yield call(getSanghaReports, action.payload)) as SanghaReport[];
-    yield put(fetchSanghaReportsSuccess(reports));
+    const response = (yield call(api.get, '/api/admin/sangha/reports', {
+      params: action.payload ?? { limit: 20, offset: 0 },
+    })) as AxiosResponse<SanghaReportsResponse>;
+    yield put(fetchSanghaReportsSuccess(response.data));
   } catch (error: unknown) {
     yield put(fetchSanghaReportsFailure(getApiErrorMessage(error, 'Sangha reports request failed')));
   }
 }
 
-function* resolveSanghaReportSaga(action: PayloadAction<ResolveSanghaReportPayload>): Generator {
+function* resolveSanghaReportSaga(
+  action: ReturnType<typeof resolveSanghaReportStart>,
+): Generator {
   try {
-    const { reportId, status, note } = action.payload;
-    const updatedReport = (yield call(resolveSanghaReport, reportId, status, note)) as SanghaReport;
-    yield put(resolveSanghaReportSuccess(updatedReport));
+    const response = (yield call(
+      api.post,
+      `/api/admin/sangha/reports/${action.payload.id}/resolve`,
+      {
+        status: action.payload.status ?? 'resolved',
+        note: action.payload.note,
+      },
+    )) as AxiosResponse<ReportResponse>;
+    yield put(resolveSanghaReportSuccess(response.data.report));
+    yield call(showToast, { title: 'Sangha report updated', variant: 'success' });
   } catch (error: unknown) {
     yield put(resolveSanghaReportFailure(getApiErrorMessage(error, 'Sangha report resolve failed')));
   }
 }
 
-function* sendAnnouncementSaga(action: PayloadAction<SendAnnouncementPayload>): Generator {
+function* sendAnnouncementSaga(
+  action: ReturnType<typeof sendAnnouncementStart>,
+): Generator {
   try {
-    yield call(sendSanghaAnnouncement, action.payload);
+    yield call(api.post, '/api/admin/sangha/announcements', action.payload);
     yield put(sendAnnouncementSuccess());
+    yield call(showToast, { title: 'Announcement sent', variant: 'success' });
   } catch (error: unknown) {
     yield put(sendAnnouncementFailure(getApiErrorMessage(error, 'Sangha announcement failed')));
   }
 }
 
-function* fetchLiveStreamsSaga(): Generator {
+function* fetchLiveStreamsSaga(
+  action: ReturnType<typeof fetchLiveStreamsStart>,
+): Generator {
   try {
-    const streams = (yield call(getLiveStreams)) as SanghaLiveStream[];
-    yield put(fetchLiveStreamsSuccess(streams));
+    const response = (yield call(api.get, '/api/admin/sangha/live-streams', {
+      params: action.payload ?? { limit: 20, offset: 0 },
+    })) as AxiosResponse<SanghaLiveStreamsResponse>;
+    yield put(fetchLiveStreamsSuccess(response.data));
   } catch (error: unknown) {
     yield put(fetchLiveStreamsFailure(getApiErrorMessage(error, 'Sangha live streams request failed')));
   }
 }
 
-function* endLiveStreamSaga(action: PayloadAction<string>): Generator {
+function* endLiveStreamSaga(
+  action: ReturnType<typeof endLiveStreamStart>,
+): Generator {
   try {
-    const streamId = action.payload;
-    const updatedStream = (yield call(endLiveStream, streamId)) as SanghaLiveStream;
-    yield put(endLiveStreamSuccess(updatedStream));
+    const response = (yield call(
+      api.post,
+      `/api/admin/sangha/live-streams/${action.payload}/end`,
+      {},
+    )) as AxiosResponse<StreamResponse>;
+    yield put(endLiveStreamSuccess(response.data.stream));
+    yield call(showToast, { title: 'Live stream ended', variant: 'success' });
   } catch (error: unknown) {
     yield put(liveStreamActionFailure(getApiErrorMessage(error, 'Sangha live stream end failed')));
   }
 }
 
-function* removeLiveStreamRecordingSaga(action: PayloadAction<string>): Generator {
+function* removeLiveStreamRecordingSaga(
+  action: ReturnType<typeof removeLiveStreamRecordingStart>,
+): Generator {
   try {
-    const streamId = action.payload;
-    yield call(removeLiveStreamRecording, streamId);
-    yield put(removeLiveStreamRecordingSuccess(streamId));
+    yield call(api.delete, `/api/admin/sangha/live-streams/${action.payload}/recording`);
+    yield put(removeLiveStreamRecordingSuccess(action.payload));
+    yield call(showToast, { title: 'Recording removed', variant: 'success' });
   } catch (error: unknown) {
     yield put(liveStreamActionFailure(getApiErrorMessage(error, 'Sangha recording removal failed')));
   }
@@ -189,48 +246,56 @@ function* removeLiveStreamRecordingSaga(action: PayloadAction<string>): Generato
 
 function* fetchSanghaAnalyticsSaga(): Generator {
   try {
-    const analytics = (yield call(getSanghaAnalytics)) as SanghaAnalytics;
-    yield put(fetchSanghaAnalyticsSuccess(analytics));
+    const response = (yield call(
+      api.get,
+      '/api/admin/sangha/analytics',
+      { params: { days: 30 } },
+    )) as AxiosResponse<AdminSanghaAnalytics>;
+    yield put(fetchSanghaAnalyticsSuccess(response.data));
   } catch (error: unknown) {
     yield put(fetchSanghaAnalyticsFailure(getApiErrorMessage(error, 'Sangha analytics request failed')));
   }
 }
 
-function* fetchSanghaAuditLogsSaga(action: PayloadAction<{ page: number; limit: number }>): Generator {
+function* fetchSanghaAuditLogsSaga(
+  action: ReturnType<typeof fetchSanghaAuditLogsStart>,
+): Generator {
   try {
-    const { page, limit } = action.payload;
-    const response = (yield call(getSanghaAuditLogs, page, limit)) as PaginatedResponse<SanghaAuditLog>;
-    yield put(fetchSanghaAuditLogsSuccess(response));
+    const response = (yield call(api.get, '/api/admin/sangha/audit-logs', {
+      params: action.payload ?? { limit: 50, offset: 0 },
+    })) as AxiosResponse<SanghaAuditLogsResponse>;
+    yield put(fetchSanghaAuditLogsSuccess(response.data));
   } catch (error: unknown) {
     yield put(fetchSanghaAuditLogsFailure(getApiErrorMessage(error, 'Sangha audit logs request failed')));
   }
 }
 
-function* fetchGroupMembersSaga(action: PayloadAction<string>): Generator {
+function* updateGroupMemberRoleSaga(
+  action: ReturnType<typeof updateGroupMemberRoleStart>,
+): Generator {
   try {
-    const groupId = action.payload;
-    const members = (yield call(getGroupMembers, groupId)) as SanghaMember[];
-    yield put(fetchGroupMembersSuccess(members));
-  } catch (error: unknown) {
-    yield put(fetchGroupMembersFailure(getApiErrorMessage(error, 'Sangha members request failed')));
-  }
-}
-
-function* updateGroupMemberRoleSaga(action: PayloadAction<UpdateMemberActionPayload>): Generator {
-  try {
-    const { groupId, memberId, payload } = action.payload;
-    const updatedMember = (yield call(updateMemberRole, groupId, memberId, payload)) as SanghaMember;
-    yield put(updateGroupMemberRoleSuccess(updatedMember));
+    yield call(
+      api.patch,
+      `/api/admin/sangha/groups/${action.payload.groupId}/members/${action.payload.memberId}`,
+      { role: action.payload.role, note: action.payload.note },
+    );
+    yield put(updateGroupMemberRoleSuccess());
+    yield call(showToast, { title: 'Member role updated', variant: 'success' });
   } catch (error: unknown) {
     yield put(updateGroupMemberRoleFailure(getApiErrorMessage(error, 'Sangha member role update failed')));
   }
 }
 
-function* removeGroupMemberSaga(action: PayloadAction<RemoveMemberActionPayload>): Generator {
+function* removeGroupMemberSaga(
+  action: ReturnType<typeof removeGroupMemberStart>,
+): Generator {
   try {
-    const { groupId, memberId } = action.payload;
-    yield call(removeMember, groupId, memberId);
-    yield put(removeGroupMemberSuccess(memberId));
+    yield call(
+      api.delete,
+      `/api/admin/sangha/groups/${action.payload.groupId}/members/${action.payload.memberId}`,
+    );
+    yield put(removeGroupMemberSuccess());
+    yield call(showToast, { title: 'Member removed', variant: 'success' });
   } catch (error: unknown) {
     yield put(removeGroupMemberFailure(getApiErrorMessage(error, 'Sangha member remove failed')));
   }
@@ -252,7 +317,6 @@ export function* sanghaSaga() {
     takeLatest(removeLiveStreamRecordingStart.type, removeLiveStreamRecordingSaga),
     takeLatest(fetchSanghaAnalyticsStart.type, fetchSanghaAnalyticsSaga),
     takeLatest(fetchSanghaAuditLogsStart.type, fetchSanghaAuditLogsSaga),
-    takeLatest(fetchGroupMembersStart.type, fetchGroupMembersSaga),
     takeLatest(updateGroupMemberRoleStart.type, updateGroupMemberRoleSaga),
     takeLatest(removeGroupMemberStart.type, removeGroupMemberSaga),
   ]);
