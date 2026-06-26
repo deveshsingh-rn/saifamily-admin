@@ -10,6 +10,7 @@ import {
     selectUsersCurrentPage,
     selectUsersTotalPages,
     updateUserStatusStart,
+    User,
 } from '../../store/features/users/usersSlice';
 import withAuth from '../../store/withAuth';
 import Table, { Column } from '../../components/Table';
@@ -27,7 +28,10 @@ const UsersPage = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [modalState, setModalState] = useState({ isOpen: false, user: null as any | null });
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    user: User | null;
+  }>({ isOpen: false, user: null });
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -39,7 +43,7 @@ const UsersPage = () => {
     dispatch(fetchUsersStart({ page, limit: 10, search: debouncedSearchTerm, status: statusFilter }));
   };
   
-  const openModal = (user: any) => setModalState({ isOpen: true, user });
+  const openModal = (user: User) => setModalState({ isOpen: true, user });
   const closeModal = () => setModalState({ isOpen: false, user: null });
 
   const handleConfirmStatusChange = () => {
@@ -49,13 +53,15 @@ const UsersPage = () => {
     }
   };
 
-  const columns: Column[] = [
-    { header: 'ID', accessor: 'id' },
-    { header: 'Name', accessor: 'name' },
-    { header: 'Email', accessor: 'email' },
+  const columns: Column<User>[] = [
+    { id: 'id', header: 'ID', accessor: 'id', cellClassName: 'whitespace-nowrap' },
+    { id: 'name', header: 'Name', accessor: 'name', cellClassName: 'whitespace-nowrap' },
+    { id: 'email', header: 'Email', accessor: 'email' },
     { 
+      id: 'status',
       header: 'Status', 
       accessor: 'isActive',
+      cellClassName: 'whitespace-nowrap',
       cell: (row) => (
         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${row.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
             {row.isActive ? 'Active' : 'Inactive'}
@@ -63,8 +69,9 @@ const UsersPage = () => {
       )
     },
     {
+        id: 'actions',
         header: 'Actions',
-        accessor: 'actions',
+        cellClassName: 'whitespace-nowrap',
         cell: (row) => (
             <button 
                 onClick={() => openModal(row)}
@@ -105,7 +112,13 @@ const UsersPage = () => {
       {error && <p className="text-red-500">{error}</p>}
       
       <div className="bg-white shadow rounded-lg">
-        <Table columns={columns} data={users} />
+        <Table
+          columns={columns}
+          data={users}
+          getRowKey={(user) => user.id}
+          emptyMessage="No users match the current filters."
+          caption="Admin users"
+        />
         <Pagination 
           currentPage={currentPage}
           totalPages={totalPages}
@@ -117,9 +130,9 @@ const UsersPage = () => {
         isOpen={modalState.isOpen}
         onClose={closeModal}
         onConfirm={handleConfirmStatusChange}
-        title={`Confirm Status Change`}
+        title="Confirm Status Change"
       >
-        Are you sure you want to {modalState.user?.isActive ? 'ban' : 'unban'} the user "{modalState.user?.name}"?
+        Are you sure you want to {modalState.user?.isActive ? 'ban' : 'unban'} the user &quot;{modalState.user?.name}&quot;?
       </Modal>
     </div>
   );

@@ -215,7 +215,12 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Admin user, content, category, directory, and Sangha resources.
 - [ ] Consolidate duplicate root-level and `app/store/features/*` API/slice/saga files.
 - [ ] Fix current TypeScript errors in the Sangha feature and missing imports.
-- [ ] Make the shared `Table` component generic instead of using `any`.
+- [x] Make the shared `Table` component generic instead of using `any`.
+  - Typed accessors and custom cell renderers.
+  - Stable resource-based row keys instead of array indexes.
+  - Accessible caption support and semantic column headers.
+  - Reusable empty state and responsive horizontal overflow.
+  - Users page migrated without `any`.
 - [ ] Add server-side pagination, debounced search, filters, empty states, and retry states.
 - [ ] Add confirmation dialogs for destructive and moderation actions.
 - [ ] Add role-based navigation and route authorization.
