@@ -3,21 +3,33 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useDispatch } from 'react-redux';
-import { logout } from '../store/features/auth/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  AdminRole,
+  logout,
+  selectAuthRole,
+} from '../store/features/auth/authSlice';
 import withAuth from '../store/withAuth';
 
 const navItems = [
-  { href: '/admin/users', label: 'Users' },
-  { href: '/admin/content', label: 'Content' },
-  { href: '/admin/categories', label: 'Categories' },
-  { href: '/admin/directory', label: 'Directory' },
-  { href: '/admin/sangha', label: 'Sangha' },
-];
+  { href: '/admin/users', label: 'Users', roles: ['super_admin'] },
+  { href: '/admin/content', label: 'Content', roles: ['super_admin', 'mandir_admin'] },
+  { href: '/admin/categories', label: 'Categories', roles: ['super_admin', 'mandir_admin'] },
+  { href: '/admin/directory', label: 'Directory', roles: ['super_admin', 'mandir_admin'] },
+  { href: '/admin/sangha', label: 'Sangha', roles: ['super_admin', 'mandir_admin'] },
+] satisfies Array<{
+  href: string;
+  label: string;
+  roles: AdminRole[];
+}>;
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const dispatch = useDispatch();
+  const role = useSelector(selectAuthRole);
+  const visibleNavItems = navItems.filter((item) =>
+    role ? item.roles.includes(role as AdminRole) : false,
+  );
 
   const handleLogout = () => {
     dispatch(logout());
@@ -32,7 +44,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           <span className="ml-2 text-sm font-semibold text-gray-500">Admin</span>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-2">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}

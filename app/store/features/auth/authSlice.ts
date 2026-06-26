@@ -12,6 +12,12 @@ interface AuthState {
   registrationSuccess: boolean;
 }
 
+export const ADMIN_ROLES = ['super_admin', 'mandir_admin'] as const;
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+
+export const isAdminRole = (role: string | null): role is AdminRole =>
+  role === 'super_admin' || role === 'mandir_admin';
+
 const initialState: AuthState = {
   userId: null,
   token: null,
@@ -29,6 +35,7 @@ const authSlice = createSlice({
   reducers: {
     // Mobile OTP actions
     sendOtpStart(state, action: PayloadAction<{ mobileNumber: string }>) {
+      void action;
       state.loading = true;
       state.error = null;
     },
@@ -40,6 +47,7 @@ const authSlice = createSlice({
       state.loading = false;
     },
     verifyOtpStart(state, action: PayloadAction<{ mobileNumber: string; otp: string }>) {
+      void action;
       state.loading = true;
       state.error = null;
     },
@@ -60,6 +68,7 @@ const authSlice = createSlice({
 
     // Email/Password actions
     loginStart(state, action: PayloadAction<{ email: string; password: string }>) {
+      void action;
       state.loading = true;
       state.error = null;
     },
@@ -80,6 +89,7 @@ const authSlice = createSlice({
 
     // Registration actions
     registerStart(state, action: PayloadAction<{ name: string; email: string; password: string }>) {
+      void action;
       state.loading = true;
       state.error = null;
       state.registrationSuccess = false;
@@ -150,6 +160,8 @@ export const selectAuthInitialized = (state: RootState) => state.auth.isInitiali
 export const selectAuthLoading = (state: RootState) => state.auth.loading;
 export const selectAuthError = (state: RootState) => state.auth.error;
 export const selectUser = (state: RootState) => state.auth.userId;
+export const selectAuthRole = (state: RootState) => state.auth.role;
+export const selectIsAdmin = (state: RootState) => isAdminRole(state.auth.role);
 export const selectRegistrationSuccess = (state: RootState) => state.auth.registrationSuccess;
 
 export default authSlice.reducer;

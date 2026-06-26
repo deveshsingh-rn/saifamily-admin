@@ -1,26 +1,14 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { AxiosError } from 'axios';
+import { getApiErrorMessage } from '../../../services/apiError';
 import api from '../../../services/api';
 import { createAccountStart, createAccountSuccess, createAccountFailure } from './accountSlice';
 import { loginSuccess } from '../auth/authSlice';
-import { ApiErrorResponse } from '../../../types/adminApi';
 
 interface CreateAccountResponse {
   token?: string;
   userId?: string;
   role?: string;
 }
-
-const getErrorMessage = (error: unknown) => {
-  const axiosError = error as AxiosError<ApiErrorResponse>;
-
-  return (
-    axiosError.response?.data?.message ||
-    axiosError.response?.data?.error ||
-    axiosError.message ||
-    'Something went wrong while creating the account.'
-  );
-};
 
 function* createAccountSaga(action: ReturnType<typeof createAccountStart>): Generator {
   try {
@@ -45,7 +33,7 @@ function* createAccountSaga(action: ReturnType<typeof createAccountStart>): Gene
     yield put(createAccountSuccess());
 
   } catch (error: unknown) {
-    yield put(createAccountFailure(getErrorMessage(error)));
+    yield put(createAccountFailure(getApiErrorMessage(error, 'Account create failed')));
   }
 }
 

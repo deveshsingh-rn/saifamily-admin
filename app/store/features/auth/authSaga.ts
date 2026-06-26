@@ -1,5 +1,6 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
+import { getApiErrorMessage } from '../../../services/apiError';
 import api from '../../../services/api';
 import {
   clearAuthSession,
@@ -20,6 +21,7 @@ import {
   registerSuccess,
   registerFailure,
   logout,
+  isAdminRole,
 } from './authSlice';
 
 interface AuthResponse {
@@ -31,17 +33,6 @@ interface AuthResponse {
     accessToken: string;
     refreshToken: string;
   };
-}
-
-const ADMIN_ROLES = new Set(['mandir_admin', 'super_admin']);
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof AxiosError) {
-    const responseMessage = (error.response?.data as { message?: string } | undefined)?.message;
-    return responseMessage ?? error.message;
-  }
-
-  return error instanceof Error ? error.message : 'Authentication failed';
 }
 
 function persistSession(response: AuthResponse): void {
@@ -74,7 +65,7 @@ function* sendOtpSaga(action: ReturnType<typeof sendOtpStart>): Generator {
     yield call(api.post, '/api/auth/mobile/send-otp', { mobileNumber: action.payload.mobileNumber });
     yield put(sendOtpSuccess());
   } catch (error: unknown) {
-    yield put(sendOtpFailure(getErrorMessage(error)));
+    yield put(sendOtpFailure(getApiErrorMessage(error, 'OTP request failed')));
   }
 }
 
@@ -85,7 +76,7 @@ function* verifyOtpSaga(action: ReturnType<typeof verifyOtpStart>): Generator {
       otp: action.payload.otp.trim(),
     })) as AxiosResponse<AuthResponse>;
 
-    if (!ADMIN_ROLES.has(response.data.user.role)) {
+    if (!isAdminRole(response.data.user.role)) {
       throw new Error('This account does not have admin panel access');
     }
 
@@ -96,7 +87,7 @@ function* verifyOtpSaga(action: ReturnType<typeof verifyOtpStart>): Generator {
       role: response.data.user.role,
     }));
   } catch (error: unknown) {
-    yield put(verifyOtpFailure(getErrorMessage(error)));
+    yield put(verifyOtpFailure(getApiErrorMessage(error, 'OTP verification failed')));
   }
 }
 
@@ -108,7 +99,7 @@ function* loginSaga(action: ReturnType<typeof loginStart>): Generator {
       action.payload,
     )) as AxiosResponse<AuthResponse>;
 
-    if (!ADMIN_ROLES.has(response.data.user.role)) {
+    if (!isAdminRole(response.data.user.role)) {
       throw new Error('This account does not have admin panel access');
     }
 
@@ -119,7 +110,7 @@ function* loginSaga(action: ReturnType<typeof loginStart>): Generator {
       role: response.data.user.role,
     }));
   } catch (error: unknown) {
-    yield put(loginFailure(getErrorMessage(error)));
+    yield put(loginFailure(getApiErrorMessage(error, 'Login failed')));
   }
 }
 
@@ -129,7 +120,7 @@ function* registerSaga(action: ReturnType<typeof registerStart>): Generator {
     yield put(registerSuccess());
     // You might want to automatically trigger login or show a "please verify your email" message here.
   } catch (error: unknown) {
-    yield put(registerFailure(getErrorMessage(error)));
+    yield put(registerFailure(getApiErrorMessage(error, 'Registration failed')));
   }
 }
 

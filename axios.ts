@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import {
   clearAuthSession,
+  notifyForbidden,
   notifySessionExpired,
   readAuthSession,
   updateStoredTokens,
@@ -84,6 +85,11 @@ axiosInstance.interceptors.response.use(
       requestUrl.includes('/api/auth/logout') ||
       requestUrl.includes('/api/auth/mobile/verify-otp') ||
       requestUrl.includes('/api/auth/email/login');
+
+    if (error.response?.status === 403) {
+      notifyForbidden();
+      return Promise.reject(error);
+    }
 
     if (error.response?.status !== 401 || !originalRequest || originalRequest._retry || isAuthRequest) {
       return Promise.reject(error);

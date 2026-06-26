@@ -57,7 +57,10 @@ Last audit: June 26, 2026
 - [x] Revoke the refresh token through `POST /api/auth/logout`.
 - [x] Verify the backend returns `401` when the access token is missing.
 - [ ] Verify the frontend redirects to `/login` after a `401`.
-- [ ] Verify `403` handling displays an authorization error without retry loops.
+- [~] Verify `403` handling displays an authorization error without retry loops.
+  - Axios now emits a forbidden event on `403` and does not retry.
+  - App provider displays an access-denied toast.
+  - Backend `403` still needs a real non-admin token fixture to verify end-to-end.
 
 ## Phase 2 — Safe read-only API tests
 
@@ -250,8 +253,15 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [~] Add confirmation dialogs for destructive and moderation actions.
   - Users status changes and content deletion require confirmation.
   - Directory/Sangha moderation actions still need confirmation dialogs before fixture-backed enablement.
-- [ ] Add role-based navigation and route authorization.
-- [ ] Add toast feedback and normalized backend error messages.
+- [x] Add role-based navigation and route authorization.
+  - `withAuth` now enforces admin roles and renders a `403 Forbidden` screen for unauthorized roles.
+  - Admin layout filters navigation by role.
+  - User management is restricted to `super_admin`.
+- [~] Add toast feedback and normalized backend error messages.
+  - Added app-level toast event rendering in the Redux provider.
+  - Session expiry and `403` responses surface user-facing toasts.
+  - Shared `getApiErrorMessage` normalizes Axios/backend errors across auth, users, content, categories, Sangha, and account flows.
+  - Success toasts for individual CRUD/moderation flows can be added as each fixture-backed mutation flow is enabled.
 - [ ] Add Redux Saga tests for success, validation failure, `401`, `403`, and server errors.
 - [ ] Add component tests for tables, filters, pagination, and confirmation dialogs.
 - [ ] Add Playwright admin flows:
@@ -267,7 +277,9 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [x] All 14 safe GET endpoints return expected success responses.
 - [ ] All 30 mutation endpoints are tested with disposable fixtures.
 - [x] Unauthorized requests return `401`.
-- [ ] Authenticated non-admin requests return `403`.
+- [~] Authenticated non-admin requests return `403`.
+  - Frontend handles `403` without refresh retry loops.
+  - Backend verification is pending a non-admin login/token fixture.
 - [ ] Admin pages work after browser refresh and token renewal.
 - [x] No TypeScript or ESLint errors remain in admin-related files.
   - `npx tsc --noEmit --pretty false` passes.

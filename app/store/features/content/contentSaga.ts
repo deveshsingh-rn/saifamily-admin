@@ -1,5 +1,6 @@
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { call, put, takeLatest } from 'redux-saga/effects';
+import { getApiErrorMessage } from '../../../services/apiError';
 import api from '../../../services/api';
 import {
   ContentResponse,
@@ -11,18 +12,6 @@ import {
   fetchContentSuccess,
 } from './contentSlice';
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof AxiosError) {
-    const data = error.response?.data as
-      | { message?: string; error?: { message?: string } }
-      | undefined;
-
-    return data?.message ?? data?.error?.message ?? error.message;
-  }
-
-  return error instanceof Error ? error.message : 'Content request failed';
-}
-
 function* fetchContentSaga(
   action: ReturnType<typeof fetchContentStart>,
 ): Generator {
@@ -33,7 +22,7 @@ function* fetchContentSaga(
 
     yield put(fetchContentSuccess(response.data));
   } catch (error: unknown) {
-    yield put(fetchContentFailure(getErrorMessage(error)));
+    yield put(fetchContentFailure(getApiErrorMessage(error, 'Content request failed')));
   }
 }
 
@@ -46,7 +35,7 @@ function* deleteContentSaga(
     yield put(deleteContentSuccess(contentId));
     yield put(fetchContentStart(query));
   } catch (error: unknown) {
-    yield put(deleteContentFailure(getErrorMessage(error)));
+    yield put(deleteContentFailure(getApiErrorMessage(error, 'Content delete failed')));
   }
 }
 

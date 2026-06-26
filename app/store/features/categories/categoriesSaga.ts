@@ -1,5 +1,6 @@
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { call, put, takeLatest } from 'redux-saga/effects';
+import { getApiErrorMessage } from '../../../services/apiError';
 import api from '../../../services/api';
 import {
   Category,
@@ -22,18 +23,6 @@ interface CategoryResponse {
   category: Category;
 }
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof AxiosError) {
-    const data = error.response?.data as
-      | { message?: string; error?: { message?: string } }
-      | undefined;
-
-    return data?.message ?? data?.error?.message ?? error.message;
-  }
-
-  return error instanceof Error ? error.message : 'Category request failed';
-}
-
 function* fetchCategoriesSaga(): Generator {
   try {
     const response = (yield call(
@@ -42,7 +31,7 @@ function* fetchCategoriesSaga(): Generator {
     )) as AxiosResponse<CategoriesResponse>;
     yield put(fetchCategoriesSuccess(response.data.categories));
   } catch (error: unknown) {
-    yield put(fetchCategoriesFailure(getErrorMessage(error)));
+    yield put(fetchCategoriesFailure(getApiErrorMessage(error, 'Category request failed')));
   }
 }
 
@@ -57,7 +46,7 @@ function* createCategorySaga(
     )) as AxiosResponse<CategoryResponse>;
     yield put(createCategorySuccess(response.data.category));
   } catch (error: unknown) {
-    yield put(createCategoryFailure(getErrorMessage(error)));
+    yield put(createCategoryFailure(getApiErrorMessage(error, 'Category create failed')));
   }
 }
 
@@ -73,7 +62,7 @@ function* updateCategorySaga(
     )) as AxiosResponse<CategoryResponse>;
     yield put(updateCategorySuccess(response.data.category));
   } catch (error: unknown) {
-    yield put(updateCategoryFailure(getErrorMessage(error)));
+    yield put(updateCategoryFailure(getApiErrorMessage(error, 'Category update failed')));
   }
 }
 

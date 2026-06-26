@@ -1,5 +1,5 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
-import { AxiosError } from 'axios';
+import { getApiErrorMessage } from '../../../services/apiError';
 import api from '../../../services/api';
 import { 
   fetchUsersSuccess,
@@ -9,7 +9,7 @@ import {
   updateUserStatusSuccess,
   updateUserStatusFailure,
 } from './usersSlice';
-import { AdminUser, AdminUsersResponse, ApiErrorResponse } from '../../../types/adminApi';
+import { AdminUser, AdminUsersResponse } from '../../../types/adminApi';
 
 interface UsersRequestParams {
   limit: number;
@@ -24,17 +24,6 @@ interface UpdateUserStatusResponse {
 
 const isAdminUser = (value: AdminUser | UpdateUserStatusResponse): value is AdminUser =>
   'id' in value && 'isActive' in value;
-
-const getErrorMessage = (error: unknown) => {
-  const axiosError = error as AxiosError<ApiErrorResponse>;
-
-  return (
-    axiosError.response?.data?.message ||
-    axiosError.response?.data?.error ||
-    axiosError.message ||
-    'Something went wrong while processing the user request.'
-  );
-};
 
 function* fetchUsersSaga(action: ReturnType<typeof fetchUsersStart>): Generator {
   try {
@@ -54,7 +43,7 @@ function* fetchUsersSaga(action: ReturnType<typeof fetchUsersStart>): Generator 
     };
     yield put(fetchUsersSuccess(response.data));
   } catch (error: unknown) {
-    yield put(fetchUsersFailure(getErrorMessage(error)));
+    yield put(fetchUsersFailure(getApiErrorMessage(error, 'User request failed')));
   }
 }
 
@@ -72,7 +61,7 @@ function* updateUserStatusSaga(action: ReturnType<typeof updateUserStatusStart>)
 
     yield put(updateUserStatusSuccess(updatedUser));
   } catch (error: unknown) {
-    yield put(updateUserStatusFailure(getErrorMessage(error)));
+    yield put(updateUserStatusFailure(getApiErrorMessage(error, 'User status update failed')));
   }
 }
 

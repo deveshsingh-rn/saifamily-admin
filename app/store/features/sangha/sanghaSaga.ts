@@ -1,6 +1,6 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
-import { AxiosError } from 'axios';
+import { getApiErrorMessage } from '../../../services/apiError';
 import {
   getSanghaGroups,
   createSanghaGroup,
@@ -71,25 +71,13 @@ import { SendAnnouncementPayload } from '@/sanghaAnnouncement';
 import { SanghaLiveStream } from '@/sanghaLiveStream';
 import { SanghaAnalytics, SanghaAuditLog } from '@/sanghaMeta';
 import { PaginatedResponse } from '@/api';
-import { ApiErrorResponse } from '../../../types/adminApi';
-
-const getErrorMessage = (error: unknown) => {
-  const axiosError = error as AxiosError<ApiErrorResponse>;
-
-  return (
-    axiosError.response?.data?.message ||
-    axiosError.response?.data?.error ||
-    axiosError.message ||
-    'Something went wrong while processing the Sangha request.'
-  );
-};
 
 function* fetchSanghaGroupsSaga(): Generator {
   try {
     const groups = (yield call(getSanghaGroups)) as SanghaGroup[];
     yield put(fetchSanghaGroupsSuccess(groups));
   } catch (error: unknown) {
-    yield put(fetchSanghaGroupsFailure(getErrorMessage(error)));
+    yield put(fetchSanghaGroupsFailure(getApiErrorMessage(error, 'Sangha groups request failed')));
   }
 }
 
@@ -98,7 +86,7 @@ function* addSanghaGroupSaga(action: PayloadAction<CreateSanghaGroupPayload>): G
     const newGroup = (yield call(createSanghaGroup, action.payload)) as SanghaGroup;
     yield put(addSanghaGroupSuccess(newGroup));
   } catch (error: unknown) {
-    yield put(addSanghaGroupFailure(getErrorMessage(error)));
+    yield put(addSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group create failed')));
   }
 }
 
@@ -108,7 +96,7 @@ function* updateSanghaGroupSaga(action: PayloadAction<UpdateGroupActionPayload>)
     const updatedGroup = (yield call(updateSanghaGroup, id, payload)) as SanghaGroup;
     yield put(updateSanghaGroupSuccess(updatedGroup));
   } catch (error: unknown) {
-    yield put(updateSanghaGroupFailure(getErrorMessage(error)));
+    yield put(updateSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group update failed')));
   }
 }
 
@@ -118,7 +106,7 @@ function* deleteSanghaGroupSaga(action: PayloadAction<string>): Generator {
     yield call(deleteSanghaGroup, groupId);
     yield put(deleteSanghaGroupSuccess(groupId));
   } catch (error: unknown) {
-    yield put(deleteSanghaGroupFailure(getErrorMessage(error)));
+    yield put(deleteSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group delete failed')));
   }
 }
 
@@ -128,7 +116,7 @@ function* verifyGroupSaga(action: PayloadAction<string>): Generator {
     const updatedGroup = (yield call(verifySanghaGroup, groupId)) as SanghaGroup;
     yield put(updateSanghaGroupSuccess(updatedGroup));
   } catch (error: unknown) {
-    yield put(updateSanghaGroupFailure(getErrorMessage(error)));
+    yield put(updateSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group verify failed')));
   }
 }
 
@@ -138,7 +126,7 @@ function* unverifyGroupSaga(action: PayloadAction<string>): Generator {
     const updatedGroup = (yield call(unverifySanghaGroup, groupId)) as SanghaGroup;
     yield put(updateSanghaGroupSuccess(updatedGroup));
   } catch (error: unknown) {
-    yield put(updateSanghaGroupFailure(getErrorMessage(error)));
+    yield put(updateSanghaGroupFailure(getApiErrorMessage(error, 'Sangha group unverify failed')));
   }
 }
 
@@ -147,7 +135,7 @@ function* fetchSanghaReportsSaga(action: PayloadAction<SanghaReportStatus | unde
     const reports = (yield call(getSanghaReports, action.payload)) as SanghaReport[];
     yield put(fetchSanghaReportsSuccess(reports));
   } catch (error: unknown) {
-    yield put(fetchSanghaReportsFailure(getErrorMessage(error)));
+    yield put(fetchSanghaReportsFailure(getApiErrorMessage(error, 'Sangha reports request failed')));
   }
 }
 
@@ -157,7 +145,7 @@ function* resolveSanghaReportSaga(action: PayloadAction<ResolveSanghaReportPaylo
     const updatedReport = (yield call(resolveSanghaReport, reportId, status, note)) as SanghaReport;
     yield put(resolveSanghaReportSuccess(updatedReport));
   } catch (error: unknown) {
-    yield put(resolveSanghaReportFailure(getErrorMessage(error)));
+    yield put(resolveSanghaReportFailure(getApiErrorMessage(error, 'Sangha report resolve failed')));
   }
 }
 
@@ -166,7 +154,7 @@ function* sendAnnouncementSaga(action: PayloadAction<SendAnnouncementPayload>): 
     yield call(sendSanghaAnnouncement, action.payload);
     yield put(sendAnnouncementSuccess());
   } catch (error: unknown) {
-    yield put(sendAnnouncementFailure(getErrorMessage(error)));
+    yield put(sendAnnouncementFailure(getApiErrorMessage(error, 'Sangha announcement failed')));
   }
 }
 
@@ -175,7 +163,7 @@ function* fetchLiveStreamsSaga(): Generator {
     const streams = (yield call(getLiveStreams)) as SanghaLiveStream[];
     yield put(fetchLiveStreamsSuccess(streams));
   } catch (error: unknown) {
-    yield put(fetchLiveStreamsFailure(getErrorMessage(error)));
+    yield put(fetchLiveStreamsFailure(getApiErrorMessage(error, 'Sangha live streams request failed')));
   }
 }
 
@@ -185,7 +173,7 @@ function* endLiveStreamSaga(action: PayloadAction<string>): Generator {
     const updatedStream = (yield call(endLiveStream, streamId)) as SanghaLiveStream;
     yield put(endLiveStreamSuccess(updatedStream));
   } catch (error: unknown) {
-    yield put(liveStreamActionFailure(getErrorMessage(error)));
+    yield put(liveStreamActionFailure(getApiErrorMessage(error, 'Sangha live stream end failed')));
   }
 }
 
@@ -195,7 +183,7 @@ function* removeLiveStreamRecordingSaga(action: PayloadAction<string>): Generato
     yield call(removeLiveStreamRecording, streamId);
     yield put(removeLiveStreamRecordingSuccess(streamId));
   } catch (error: unknown) {
-    yield put(liveStreamActionFailure(getErrorMessage(error)));
+    yield put(liveStreamActionFailure(getApiErrorMessage(error, 'Sangha recording removal failed')));
   }
 }
 
@@ -204,7 +192,7 @@ function* fetchSanghaAnalyticsSaga(): Generator {
     const analytics = (yield call(getSanghaAnalytics)) as SanghaAnalytics;
     yield put(fetchSanghaAnalyticsSuccess(analytics));
   } catch (error: unknown) {
-    yield put(fetchSanghaAnalyticsFailure(getErrorMessage(error)));
+    yield put(fetchSanghaAnalyticsFailure(getApiErrorMessage(error, 'Sangha analytics request failed')));
   }
 }
 
@@ -214,7 +202,7 @@ function* fetchSanghaAuditLogsSaga(action: PayloadAction<{ page: number; limit: 
     const response = (yield call(getSanghaAuditLogs, page, limit)) as PaginatedResponse<SanghaAuditLog>;
     yield put(fetchSanghaAuditLogsSuccess(response));
   } catch (error: unknown) {
-    yield put(fetchSanghaAuditLogsFailure(getErrorMessage(error)));
+    yield put(fetchSanghaAuditLogsFailure(getApiErrorMessage(error, 'Sangha audit logs request failed')));
   }
 }
 
@@ -224,7 +212,7 @@ function* fetchGroupMembersSaga(action: PayloadAction<string>): Generator {
     const members = (yield call(getGroupMembers, groupId)) as SanghaMember[];
     yield put(fetchGroupMembersSuccess(members));
   } catch (error: unknown) {
-    yield put(fetchGroupMembersFailure(getErrorMessage(error)));
+    yield put(fetchGroupMembersFailure(getApiErrorMessage(error, 'Sangha members request failed')));
   }
 }
 
@@ -234,7 +222,7 @@ function* updateGroupMemberRoleSaga(action: PayloadAction<UpdateMemberActionPayl
     const updatedMember = (yield call(updateMemberRole, groupId, memberId, payload)) as SanghaMember;
     yield put(updateGroupMemberRoleSuccess(updatedMember));
   } catch (error: unknown) {
-    yield put(updateGroupMemberRoleFailure(getErrorMessage(error)));
+    yield put(updateGroupMemberRoleFailure(getApiErrorMessage(error, 'Sangha member role update failed')));
   }
 }
 
@@ -244,7 +232,7 @@ function* removeGroupMemberSaga(action: PayloadAction<RemoveMemberActionPayload>
     yield call(removeMember, groupId, memberId);
     yield put(removeGroupMemberSuccess(memberId));
   } catch (error: unknown) {
-    yield put(removeGroupMemberFailure(getErrorMessage(error)));
+    yield put(removeGroupMemberFailure(getApiErrorMessage(error, 'Sangha member remove failed')));
   }
 }
 

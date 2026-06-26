@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
 } as const;
 
 export const AUTH_SESSION_EXPIRED_EVENT = 'auth:session-expired';
+export const AUTH_FORBIDDEN_EVENT = 'auth:forbidden';
 
 export function readAuthSession(): StoredAuthSession | null {
   if (typeof window === 'undefined') {
@@ -62,5 +63,11 @@ export function clearAuthSession(): void {
 export function notifySessionExpired(): void {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(AUTH_SESSION_EXPIRED_EVENT));
+  }
+}
+
+export function notifyForbidden(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(AUTH_FORBIDDEN_EVENT));
   }
 }

@@ -187,4 +187,4 @@ const UsersPage = () => {
   );
 };
 
-export default withAuth(UsersPage);
+export default withAuth(UsersPage, ['super_admin']);

@@ -11,7 +11,7 @@ export type OffsetPaginatedResponse<ResourceKey extends string, Resource> = {
 
 export interface ApiErrorResponse {
   message?: string;
-  error?: string;
+  error?: string | { message?: string };
   code?: string;
   statusCode?: number;
 }
