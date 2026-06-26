@@ -1,5 +1,6 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
 import { PayloadAction } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 import {
   getSanghaGroups,
   createSanghaGroup,
@@ -70,13 +71,25 @@ import { SendAnnouncementPayload } from '@/sanghaAnnouncement';
 import { SanghaLiveStream } from '@/sanghaLiveStream';
 import { SanghaAnalytics, SanghaAuditLog } from '@/sanghaMeta';
 import { PaginatedResponse } from '@/api';
+import { ApiErrorResponse } from '../../../types/adminApi';
+
+const getErrorMessage = (error: unknown) => {
+  const axiosError = error as AxiosError<ApiErrorResponse>;
+
+  return (
+    axiosError.response?.data?.message ||
+    axiosError.response?.data?.error ||
+    axiosError.message ||
+    'Something went wrong while processing the Sangha request.'
+  );
+};
 
 function* fetchSanghaGroupsSaga(): Generator {
   try {
     const groups = (yield call(getSanghaGroups)) as SanghaGroup[];
     yield put(fetchSanghaGroupsSuccess(groups));
-  } catch (error: any) {
-    yield put(fetchSanghaGroupsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchSanghaGroupsFailure(getErrorMessage(error)));
   }
 }
 
@@ -84,8 +97,8 @@ function* addSanghaGroupSaga(action: PayloadAction<CreateSanghaGroupPayload>): G
   try {
     const newGroup = (yield call(createSanghaGroup, action.payload)) as SanghaGroup;
     yield put(addSanghaGroupSuccess(newGroup));
-  } catch (error: any) {
-    yield put(addSanghaGroupFailure(error.message));
+  } catch (error: unknown) {
+    yield put(addSanghaGroupFailure(getErrorMessage(error)));
   }
 }
 
@@ -94,8 +107,8 @@ function* updateSanghaGroupSaga(action: PayloadAction<UpdateGroupActionPayload>)
     const { id, payload } = action.payload;
     const updatedGroup = (yield call(updateSanghaGroup, id, payload)) as SanghaGroup;
     yield put(updateSanghaGroupSuccess(updatedGroup));
-  } catch (error: any) {
-    yield put(updateSanghaGroupFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateSanghaGroupFailure(getErrorMessage(error)));
   }
 }
 
@@ -104,8 +117,8 @@ function* deleteSanghaGroupSaga(action: PayloadAction<string>): Generator {
     const groupId = action.payload;
     yield call(deleteSanghaGroup, groupId);
     yield put(deleteSanghaGroupSuccess(groupId));
-  } catch (error: any) {
-    yield put(deleteSanghaGroupFailure(error.message));
+  } catch (error: unknown) {
+    yield put(deleteSanghaGroupFailure(getErrorMessage(error)));
   }
 }
 
@@ -114,8 +127,8 @@ function* verifyGroupSaga(action: PayloadAction<string>): Generator {
     const groupId = action.payload;
     const updatedGroup = (yield call(verifySanghaGroup, groupId)) as SanghaGroup;
     yield put(updateSanghaGroupSuccess(updatedGroup));
-  } catch (error: any) {
-    yield put(updateSanghaGroupFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateSanghaGroupFailure(getErrorMessage(error)));
   }
 }
 
@@ -124,8 +137,8 @@ function* unverifyGroupSaga(action: PayloadAction<string>): Generator {
     const groupId = action.payload;
     const updatedGroup = (yield call(unverifySanghaGroup, groupId)) as SanghaGroup;
     yield put(updateSanghaGroupSuccess(updatedGroup));
-  } catch (error: any) {
-    yield put(updateSanghaGroupFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateSanghaGroupFailure(getErrorMessage(error)));
   }
 }
 
@@ -133,8 +146,8 @@ function* fetchSanghaReportsSaga(action: PayloadAction<SanghaReportStatus | unde
   try {
     const reports = (yield call(getSanghaReports, action.payload)) as SanghaReport[];
     yield put(fetchSanghaReportsSuccess(reports));
-  } catch (error: any) {
-    yield put(fetchSanghaReportsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchSanghaReportsFailure(getErrorMessage(error)));
   }
 }
 
@@ -143,8 +156,8 @@ function* resolveSanghaReportSaga(action: PayloadAction<ResolveSanghaReportPaylo
     const { reportId, status, note } = action.payload;
     const updatedReport = (yield call(resolveSanghaReport, reportId, status, note)) as SanghaReport;
     yield put(resolveSanghaReportSuccess(updatedReport));
-  } catch (error: any) {
-    yield put(resolveSanghaReportFailure(error.message));
+  } catch (error: unknown) {
+    yield put(resolveSanghaReportFailure(getErrorMessage(error)));
   }
 }
 
@@ -152,8 +165,8 @@ function* sendAnnouncementSaga(action: PayloadAction<SendAnnouncementPayload>): 
   try {
     yield call(sendSanghaAnnouncement, action.payload);
     yield put(sendAnnouncementSuccess());
-  } catch (error: any) {
-    yield put(sendAnnouncementFailure(error.message));
+  } catch (error: unknown) {
+    yield put(sendAnnouncementFailure(getErrorMessage(error)));
   }
 }
 
@@ -161,8 +174,8 @@ function* fetchLiveStreamsSaga(): Generator {
   try {
     const streams = (yield call(getLiveStreams)) as SanghaLiveStream[];
     yield put(fetchLiveStreamsSuccess(streams));
-  } catch (error: any) {
-    yield put(fetchLiveStreamsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchLiveStreamsFailure(getErrorMessage(error)));
   }
 }
 
@@ -171,8 +184,8 @@ function* endLiveStreamSaga(action: PayloadAction<string>): Generator {
     const streamId = action.payload;
     const updatedStream = (yield call(endLiveStream, streamId)) as SanghaLiveStream;
     yield put(endLiveStreamSuccess(updatedStream));
-  } catch (error: any) {
-    yield put(liveStreamActionFailure(error.message));
+  } catch (error: unknown) {
+    yield put(liveStreamActionFailure(getErrorMessage(error)));
   }
 }
 
@@ -181,8 +194,8 @@ function* removeLiveStreamRecordingSaga(action: PayloadAction<string>): Generato
     const streamId = action.payload;
     yield call(removeLiveStreamRecording, streamId);
     yield put(removeLiveStreamRecordingSuccess(streamId));
-  } catch (error: any) {
-    yield put(liveStreamActionFailure(error.message));
+  } catch (error: unknown) {
+    yield put(liveStreamActionFailure(getErrorMessage(error)));
   }
 }
 
@@ -190,8 +203,8 @@ function* fetchSanghaAnalyticsSaga(): Generator {
   try {
     const analytics = (yield call(getSanghaAnalytics)) as SanghaAnalytics;
     yield put(fetchSanghaAnalyticsSuccess(analytics));
-  } catch (error: any) {
-    yield put(fetchSanghaAnalyticsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchSanghaAnalyticsFailure(getErrorMessage(error)));
   }
 }
 
@@ -200,8 +213,8 @@ function* fetchSanghaAuditLogsSaga(action: PayloadAction<{ page: number; limit: 
     const { page, limit } = action.payload;
     const response = (yield call(getSanghaAuditLogs, page, limit)) as PaginatedResponse<SanghaAuditLog>;
     yield put(fetchSanghaAuditLogsSuccess(response));
-  } catch (error: any) {
-    yield put(fetchSanghaAuditLogsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchSanghaAuditLogsFailure(getErrorMessage(error)));
   }
 }
 
@@ -210,8 +223,8 @@ function* fetchGroupMembersSaga(action: PayloadAction<string>): Generator {
     const groupId = action.payload;
     const members = (yield call(getGroupMembers, groupId)) as SanghaMember[];
     yield put(fetchGroupMembersSuccess(members));
-  } catch (error: any) {
-    yield put(fetchGroupMembersFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchGroupMembersFailure(getErrorMessage(error)));
   }
 }
 
@@ -220,8 +233,8 @@ function* updateGroupMemberRoleSaga(action: PayloadAction<UpdateMemberActionPayl
     const { groupId, memberId, payload } = action.payload;
     const updatedMember = (yield call(updateMemberRole, groupId, memberId, payload)) as SanghaMember;
     yield put(updateGroupMemberRoleSuccess(updatedMember));
-  } catch (error: any) {
-    yield put(updateGroupMemberRoleFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateGroupMemberRoleFailure(getErrorMessage(error)));
   }
 }
 
@@ -230,8 +243,8 @@ function* removeGroupMemberSaga(action: PayloadAction<RemoveMemberActionPayload>
     const { groupId, memberId } = action.payload;
     yield call(removeMember, groupId, memberId);
     yield put(removeGroupMemberSuccess(memberId));
-  } catch (error: any) {
-    yield put(removeGroupMemberFailure(error.message));
+  } catch (error: unknown) {
+    yield put(removeGroupMemberFailure(getErrorMessage(error)));
   }
 }
 

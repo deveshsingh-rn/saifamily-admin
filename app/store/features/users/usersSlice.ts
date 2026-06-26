@@ -1,52 +1,59 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../reducers';
+import { AdminUser, AdminUsersResponse } from '../../../types/adminApi';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  isActive: boolean;
+export type User = AdminUser;
+
+export interface UsersQuery {
+  limit: number;
+  offset: number;
+  search?: string;
+  status?: 'all' | 'active' | 'inactive';
 }
 
 interface UsersState {
   users: User[];
   loading: boolean;
+  updatingUserId: string | null;
   error: string | null;
-  currentPage: number;
-  totalPages: number;
+  limit: number;
+  offset: number;
   totalUsers: number;
+  nextOffset: number | null;
+  lastQuery: UsersQuery;
 }
 
 const initialState: UsersState = {
   users: [],
   loading: false,
+  updatingUserId: null,
   error: null,
-  currentPage: 1,
-  totalPages: 1,
+  limit: 20,
+  offset: 0,
   totalUsers: 0,
+  nextOffset: null,
+  lastQuery: {
+    limit: 20,
+    offset: 0,
+    status: 'all',
+  },
 };
-
-interface PaginatedUsersResponse {
-    items: User[];
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-}
 
 const usersSlice = createSlice({
   name: 'users',
   initialState,
   reducers: {
-    fetchUsersStart(state, action: PayloadAction<{ page: number; limit: number; search?: string; status?: string }>) {
+    fetchUsersStart(state, action: PayloadAction<UsersQuery>) {
       state.loading = true;
       state.error = null;
+      state.lastQuery = action.payload;
     },
-    fetchUsersSuccess(state, action: PayloadAction<PaginatedUsersResponse>) {
-      state.users = action.payload.items;
-      state.totalUsers = action.payload.total;
-      state.currentPage = action.payload.page;
-      state.totalPages = action.payload.pages;
+    fetchUsersSuccess(state, action: PayloadAction<AdminUsersResponse>) {
+      state.users = action.payload.users;
+      state.limit = action.payload.pagination.limit;
+      state.offset = action.payload.pagination.offset;
+      state.totalUsers = action.payload.pagination.total;
+      state.nextOffset = action.payload.pagination.nextOffset;
       state.loading = false;
     },
     fetchUsersFailure(state, action: PayloadAction<string>) {
@@ -54,17 +61,19 @@ const usersSlice = createSlice({
       state.loading = false;
     },
     updateUserStatusStart(state, action: PayloadAction<{ userId: string; isActive: boolean }>) {
-        // Can set a specific loading state for the user row if needed
-        state.error = null;
+      state.updatingUserId = action.payload.userId;
+      state.error = null;
     },
     updateUserStatusSuccess(state, action: PayloadAction<User>) {
-        const index = state.users.findIndex(user => user.id === action.payload.id);
-        if (index !== -1) {
-            state.users[index] = action.payload;
-        }
+      const index = state.users.findIndex((user) => user.id === action.payload.id);
+      if (index !== -1) {
+        state.users[index] = action.payload;
+      }
+      state.updatingUserId = null;
     },
     updateUserStatusFailure(state, action: PayloadAction<string>) {
-        state.error = action.payload;
+      state.error = action.payload;
+      state.updatingUserId = null;
     },
   },
 });
@@ -80,8 +89,15 @@ export const {
 
 export const selectUsers = (state: RootState) => state.users.users;
 export const selectUsersLoading = (state: RootState) => state.users.loading;
+export const selectUsersUpdatingUserId = (state: RootState) => state.users.updatingUserId;
 export const selectUsersError = (state: RootState) => state.users.error;
-export const selectUsersCurrentPage = (state: RootState) => state.users.currentPage;
-export const selectUsersTotalPages = (state: RootState) => state.users.totalPages;
+export const selectUsersLimit = (state: RootState) => state.users.limit;
+export const selectUsersOffset = (state: RootState) => state.users.offset;
+export const selectUsersTotal = (state: RootState) => state.users.totalUsers;
+export const selectUsersLastQuery = (state: RootState) => state.users.lastQuery;
+export const selectUsersCurrentPage = (state: RootState) =>
+  Math.floor(state.users.offset / state.users.limit) + 1;
+export const selectUsersTotalPages = (state: RootState) =>
+  Math.max(1, Math.ceil(state.users.totalUsers / state.users.limit));
 
 export default usersSlice.reducer;

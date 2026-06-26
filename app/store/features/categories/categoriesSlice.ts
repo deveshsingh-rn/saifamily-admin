@@ -1,10 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../reducers';
+import { AdminExperienceCategory } from '../../../types/adminApi';
 
-export interface Category {
-  category: string;
-  label: string;
-}
+export type Category = AdminExperienceCategory;
 
 export const CATEGORY_KEYS = [
   'miracles',

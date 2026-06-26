@@ -1,26 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../reducers';
+import {
+  AdminContentItem,
+  AdminContentResponse,
+} from '../../../types/adminApi';
 
-export interface AdminContent {
-  id: string;
-  content: string;
-  category: string;
-  location: string | null;
-  createdAt: string;
-  author: {
-    id: string;
-    memberId: string;
-    name: string;
-    handle: string;
-    isActive: boolean;
-  };
-  _count: {
-    likes: number;
-    comments: number;
-    reposts: number;
-    bookmarks: number;
-  };
-}
+export type AdminContent = AdminContentItem;
 
 export interface ContentQuery {
   limit: number;
@@ -28,15 +13,7 @@ export interface ContentQuery {
   category?: string;
 }
 
-export interface ContentResponse {
-  experiences: AdminContent[];
-  pagination: {
-    limit: number;
-    offset: number;
-    total: number;
-    nextOffset: number | null;
-  };
-}
+export type ContentResponse = AdminContentResponse;
 
 interface ContentState {
   contents: AdminContent[];

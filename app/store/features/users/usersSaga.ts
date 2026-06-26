@@ -1,40 +1,79 @@
 import { call, put, takeLatest, all } from 'redux-saga/effects';
+import { AxiosError } from 'axios';
 import api from '../../../services/api';
 import { 
-    fetchUsersSuccess, 
-    fetchUsersFailure, 
-    fetchUsersStart,
-    updateUserStatusStart,
-    updateUserStatusSuccess,
-    updateUserStatusFailure,
+  fetchUsersSuccess,
+  fetchUsersFailure,
+  fetchUsersStart,
+  updateUserStatusStart,
+  updateUserStatusSuccess,
+  updateUserStatusFailure,
 } from './usersSlice';
+import { AdminUser, AdminUsersResponse, ApiErrorResponse } from '../../../types/adminApi';
+
+interface UsersRequestParams {
+  limit: number;
+  offset: number;
+  q?: string;
+  isActive?: boolean;
+}
+
+interface UpdateUserStatusResponse {
+  user?: AdminUser;
+}
+
+const isAdminUser = (value: AdminUser | UpdateUserStatusResponse): value is AdminUser =>
+  'id' in value && 'isActive' in value;
+
+const getErrorMessage = (error: unknown) => {
+  const axiosError = error as AxiosError<ApiErrorResponse>;
+
+  return (
+    axiosError.response?.data?.message ||
+    axiosError.response?.data?.error ||
+    axiosError.message ||
+    'Something went wrong while processing the user request.'
+  );
+};
 
 function* fetchUsersSaga(action: ReturnType<typeof fetchUsersStart>): Generator {
   try {
-    const { page, limit, search, status } = action.payload;
-    const params: any = { page, limit };
+    const { limit, offset, search, status } = action.payload;
+    const params: UsersRequestParams = { limit, offset };
+
     if (search) {
-      params.search = search;
-    }
-    if (status && status !== 'all') {
-      params.status = status === 'active';
+      params.q = search;
     }
 
-    const response: any = yield call(api.get, '/api/admin/users', { params });
+    if (status === 'active' || status === 'inactive') {
+      params.isActive = status === 'active';
+    }
+
+    const response = (yield call(api.get, '/api/admin/users', { params })) as {
+      data: AdminUsersResponse;
+    };
     yield put(fetchUsersSuccess(response.data));
-  } catch (error: any) {
-    yield put(fetchUsersFailure(error.response?.data?.message || error.message));
+  } catch (error: unknown) {
+    yield put(fetchUsersFailure(getErrorMessage(error)));
   }
 }
 
 function* updateUserStatusSaga(action: ReturnType<typeof updateUserStatusStart>): Generator {
-    try {
-        const { userId, isActive } = action.payload;
-        const response: any = yield call(api.patch, `/api/admin/users/${userId}/status`, { isActive });
-        yield put(updateUserStatusSuccess(response.data));
-    } catch (error: any) {
-        yield put(updateUserStatusFailure(error.response?.data?.message || error.message));
+  try {
+    const { userId, isActive } = action.payload;
+    const response = (yield call(api.patch, `/api/admin/users/${userId}/status`, {
+      isActive,
+    })) as { data: AdminUser | UpdateUserStatusResponse };
+    const updatedUser = isAdminUser(response.data) ? response.data : response.data.user;
+
+    if (!updatedUser) {
+      throw new Error('User status update succeeded without returning a user.');
     }
+
+    yield put(updateUserStatusSuccess(updatedUser));
+  } catch (error: unknown) {
+    yield put(updateUserStatusFailure(getErrorMessage(error)));
+  }
 }
 
 export function* watchUsers() {

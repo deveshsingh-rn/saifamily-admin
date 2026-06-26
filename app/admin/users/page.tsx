@@ -9,6 +9,9 @@ import {
     selectUsersError,
     selectUsersCurrentPage,
     selectUsersTotalPages,
+    selectUsersLimit,
+    selectUsersTotal,
+    selectUsersUpdatingUserId,
     updateUserStatusStart,
     User,
 } from '../../store/features/users/usersSlice';
@@ -18,6 +21,8 @@ import Pagination from '../../components/Pagination';
 import Modal from '../../components/Modal';
 import { useDebounce } from '../../hooks/useDebounce';
 
+type UserStatusFilter = 'all' | 'active' | 'inactive';
+
 const UsersPage = () => {
   const dispatch = useDispatch();
   const users = useSelector(selectUsers);
@@ -25,9 +30,12 @@ const UsersPage = () => {
   const error = useSelector(selectUsersError);
   const currentPage = useSelector(selectUsersCurrentPage);
   const totalPages = useSelector(selectUsersTotalPages);
+  const limit = useSelector(selectUsersLimit);
+  const totalUsers = useSelector(selectUsersTotal);
+  const updatingUserId = useSelector(selectUsersUpdatingUserId);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<UserStatusFilter>('all');
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     user: User | null;
@@ -36,11 +44,21 @@ const UsersPage = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    dispatch(fetchUsersStart({ page: 1, limit: 10, search: debouncedSearchTerm, status: statusFilter }));
-  }, [dispatch, debouncedSearchTerm, statusFilter]);
+    dispatch(fetchUsersStart({
+      limit,
+      offset: 0,
+      search: debouncedSearchTerm,
+      status: statusFilter,
+    }));
+  }, [dispatch, debouncedSearchTerm, limit, statusFilter]);
 
   const handlePageChange = (page: number) => {
-    dispatch(fetchUsersStart({ page, limit: 10, search: debouncedSearchTerm, status: statusFilter }));
+    dispatch(fetchUsersStart({
+      limit,
+      offset: (page - 1) * limit,
+      search: debouncedSearchTerm,
+      status: statusFilter,
+    }));
   };
   
   const openModal = (user: User) => setModalState({ isOpen: true, user });
@@ -48,15 +66,34 @@ const UsersPage = () => {
 
   const handleConfirmStatusChange = () => {
     if (modalState.user) {
-      dispatch(updateUserStatusStart({ userId: modalState.user.id, isActive: !modalState.user.isActive }));
+      dispatch(updateUserStatusStart({
+        userId: modalState.user.id,
+        isActive: !modalState.user.isActive,
+      }));
       closeModal();
     }
   };
 
   const columns: Column<User>[] = [
     { id: 'id', header: 'ID', accessor: 'id', cellClassName: 'whitespace-nowrap' },
-    { id: 'name', header: 'Name', accessor: 'name', cellClassName: 'whitespace-nowrap' },
-    { id: 'email', header: 'Email', accessor: 'email' },
+    {
+      id: 'name',
+      header: 'Name',
+      cellClassName: 'whitespace-nowrap',
+      cell: (row) => row.name || row.handle || 'Unnamed user',
+    },
+    {
+      id: 'contact',
+      header: 'Contact',
+      cell: (row) => row.email || row.mobileNumber || 'No contact',
+    },
+    {
+      id: 'role',
+      header: 'Role',
+      accessor: 'role',
+      cellClassName: 'whitespace-nowrap capitalize',
+      cell: (row) => row.role.replaceAll('_', ' '),
+    },
     { 
       id: 'status',
       header: 'Status', 
@@ -72,12 +109,17 @@ const UsersPage = () => {
         id: 'actions',
         header: 'Actions',
         cellClassName: 'whitespace-nowrap',
-        cell: (row) => (
+        cell: (row) => row.role === 'super_admin' ? (
+          <span className="text-xs font-medium text-gray-500">
+            Protected
+          </span>
+        ) : (
             <button 
                 onClick={() => openModal(row)}
-                className={`px-3 py-1 text-sm rounded-md text-white ${row.isActive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
+                disabled={updatingUserId === row.id}
+                className={`px-3 py-1 text-sm rounded-md text-white disabled:cursor-not-allowed disabled:opacity-60 ${row.isActive ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
             >
-                {row.isActive ? 'Ban' : 'Unban'}
+                {updatingUserId === row.id ? 'Saving...' : row.isActive ? 'Ban' : 'Unban'}
             </button>
         )
     }
@@ -89,10 +131,10 @@ const UsersPage = () => {
         <h1 className="text-3xl font-bold">Users</h1>
       </div>
 
-      <div className="mb-4 flex items-center space-x-4">
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <input
             type="text"
-            placeholder="Search users..."
+            placeholder="Search users by name, email, mobile, or handle..."
             className="w-full md:w-1/3 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -100,7 +142,7 @@ const UsersPage = () => {
         <select
             className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value as UserStatusFilter)}
         >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -108,8 +150,15 @@ const UsersPage = () => {
         </select>
       </div>
       
-      {loading && <p>Loading...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      <div className="mb-3 min-h-6">
+        {loading && <p className="text-sm text-gray-500">Loading users...</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        {!loading && !error && (
+          <p className="text-sm text-gray-500">
+            Showing {users.length} of {totalUsers} users.
+          </p>
+        )}
+      </div>
       
       <div className="bg-white shadow rounded-lg">
         <Table
@@ -132,7 +181,7 @@ const UsersPage = () => {
         onConfirm={handleConfirmStatusChange}
         title="Confirm Status Change"
       >
-        Are you sure you want to {modalState.user?.isActive ? 'ban' : 'unban'} the user &quot;{modalState.user?.name}&quot;?
+        Are you sure you want to {modalState.user?.isActive ? 'ban' : 'unban'} the user &quot;{modalState.user?.name || modalState.user?.email || modalState.user?.id}&quot;?
       </Modal>
     </div>
   );
