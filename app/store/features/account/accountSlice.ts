@@ -15,7 +15,8 @@ const accountSlice = createSlice({
   name: 'account',
   initialState,
   reducers: {
-    createAccountStart(state, action: PayloadAction<any>) {
+    createAccountStart(state, action: PayloadAction<FormData>) {
+      void action;
       state.loading = true;
       state.error = null;
     },

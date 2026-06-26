@@ -57,12 +57,15 @@ import { DirectoryListing, DirectoryListingStatus as ListingStatus, UpdateListin
 import { DirectoryAnalytics, DirectoryAuditLog } from '@/directoryMeta';
 import { getDirectoryAnalytics, getDirectoryAuditLogs } from './directoryMeta.api';
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Something went wrong.';
+
 function* fetchDirectoryCategoriesSaga(): Generator {
   try {
     const categories = (yield call(getDirectoryCategories)) as DirectoryCategory[];
     yield put(fetchDirectoryCategoriesSuccess(categories));
-  } catch (error: any) {
-    yield put(fetchDirectoryCategoriesFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchDirectoryCategoriesFailure(getErrorMessage(error)));
   }
 }
 
@@ -70,8 +73,8 @@ function* addDirectoryCategorySaga(action: PayloadAction<CreateDirectoryCategory
   try {
     const newCategory = (yield call(createDirectoryCategory, action.payload)) as DirectoryCategory;
     yield put(addDirectoryCategorySuccess(newCategory));
-  } catch (error: any) {
-    yield put(addDirectoryCategoryFailure(error.message));
+  } catch (error: unknown) {
+    yield put(addDirectoryCategoryFailure(getErrorMessage(error)));
   }
 }
 
@@ -80,8 +83,8 @@ function* updateDirectoryCategorySaga(action: PayloadAction<UpdateActionPayload>
     const { id, payload } = action.payload;
     const updatedCategory = (yield call(updateDirectoryCategory, id, payload)) as DirectoryCategory;
     yield put(updateDirectoryCategorySuccess(updatedCategory));
-  } catch (error: any) {
-    yield put(updateDirectoryCategoryFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateDirectoryCategoryFailure(getErrorMessage(error)));
   }
 }
 
@@ -90,8 +93,8 @@ function* deleteDirectoryCategorySaga(action: PayloadAction<string>): Generator 
     const categoryId = action.payload;
     const updatedCategory = (yield call(deleteDirectoryCategory, categoryId)) as DirectoryCategory;
     yield put(deleteDirectoryCategorySuccess(updatedCategory));
-  } catch (error: any) {
-    yield put(deleteDirectoryCategoryFailure(error.message));
+  } catch (error: unknown) {
+    yield put(deleteDirectoryCategoryFailure(getErrorMessage(error)));
   }
 }
 
@@ -99,8 +102,8 @@ function* fetchDirectoryReviewsSaga(action: PayloadAction<DirectoryReviewStatus 
   try {
     const reviews = (yield call(getDirectoryReviews, action.payload)) as DirectoryReview[];
     yield put(fetchDirectoryReviewsSuccess(reviews));
-  } catch (error: any) {
-    yield put(fetchDirectoryReviewsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchDirectoryReviewsFailure(getErrorMessage(error)));
   }
 }
 
@@ -109,8 +112,8 @@ function* updateDirectoryReviewStatusSaga(action: PayloadAction<UpdateReviewStat
     const { reviewId, status } = action.payload;
     const updatedReview = (yield call(updateDirectoryReviewStatus, reviewId, status)) as DirectoryReview;
     yield put(updateDirectoryReviewStatusSuccess(updatedReview));
-  } catch (error: any) {
-    yield put(updateDirectoryReviewStatusFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateDirectoryReviewStatusFailure(getErrorMessage(error)));
   }
 }
 
@@ -119,8 +122,8 @@ function* restoreDirectoryReviewSaga(action: PayloadAction<string>): Generator {
     const reviewId = action.payload;
     const restoredReview = (yield call(restoreDirectoryReview, reviewId)) as DirectoryReview;
     yield put(updateDirectoryReviewStatusSuccess(restoredReview));
-  } catch (error: any) {
-    yield put(updateDirectoryReviewStatusFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateDirectoryReviewStatusFailure(getErrorMessage(error)));
   }
 }
 
@@ -128,8 +131,8 @@ function* fetchDirectoryReportsSaga(action: PayloadAction<ReportStatus | undefin
   try {
     const reports = (yield call(getDirectoryReports, action.payload)) as DirectoryReport[];
     yield put(fetchDirectoryReportsSuccess(reports));
-  } catch (error: any) {
-    yield put(fetchDirectoryReportsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchDirectoryReportsFailure(getErrorMessage(error)));
   }
 }
 
@@ -138,8 +141,8 @@ function* resolveDirectoryReportSaga(action: PayloadAction<ResolveReportPayload>
     const { reportId, status, note } = action.payload;
     const updatedReport = (yield call(resolveDirectoryReport, reportId, status, note)) as DirectoryReport;
     yield put(resolveDirectoryReportSuccess(updatedReport));
-  } catch (error: any) {
-    yield put(resolveDirectoryReportFailure(error.message));
+  } catch (error: unknown) {
+    yield put(resolveDirectoryReportFailure(getErrorMessage(error)));
   }
 }
 
@@ -147,8 +150,8 @@ function* fetchDirectoryListingsSaga(action: PayloadAction<ListingStatus | undef
   try {
     const listings = (yield call(getDirectoryListings, action.payload)) as DirectoryListing[];
     yield put(fetchDirectoryListingsSuccess(listings));
-  } catch (error: any) {
-    yield put(fetchDirectoryListingsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchDirectoryListingsFailure(getErrorMessage(error)));
   }
 }
 
@@ -157,8 +160,8 @@ function* updateDirectoryListingSaga(action: PayloadAction<UpdateListingActionPa
     const { listingId, payload } = action.payload;
     const updatedListing = (yield call(updateDirectoryListing, listingId, payload)) as DirectoryListing;
     yield put(updateDirectoryListingSuccess(updatedListing));
-  } catch (error: any) {
-    yield put(updateDirectoryListingFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateDirectoryListingFailure(getErrorMessage(error)));
   }
 }
 
@@ -166,8 +169,8 @@ function* fetchDirectoryAnalyticsSaga(): Generator {
   try {
     const analytics = (yield call(getDirectoryAnalytics)) as DirectoryAnalytics;
     yield put(fetchDirectoryAnalyticsSuccess(analytics));
-  } catch (error: any) {
-    yield put(fetchDirectoryAnalyticsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchDirectoryAnalyticsFailure(getErrorMessage(error)));
   }
 }
 
@@ -175,8 +178,8 @@ function* fetchDirectoryAuditLogsSaga(): Generator {
   try {
     const auditLogs = (yield call(getDirectoryAuditLogs)) as DirectoryAuditLog[];
     yield put(fetchDirectoryAuditLogsSuccess(auditLogs));
-  } catch (error: any) {
-    yield put(fetchDirectoryAuditLogsFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchDirectoryAuditLogsFailure(getErrorMessage(error)));
   }
 }
 

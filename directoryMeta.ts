@@ -21,6 +21,6 @@ export interface DirectoryAuditLog {
     id: string;
     name?: string; // A display name for the target, e.g., listing title
   };
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   createdAt: string;
 }

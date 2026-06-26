@@ -2,7 +2,7 @@
 
 Source: `postman-api-collection.json`
 
-Last audit: June 25, 2026
+Last audit: June 26, 2026
 
 ## Test configuration
 
@@ -118,6 +118,8 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Create/select a disposable test user.
   - Test ban and allow transitions.
   - Verify invalid user ID and repeated-state behavior.
+  - Frontend Redux Saga/UI integration is aligned to the live `{ users, pagination }` contract.
+  - Super admin rows are protected from casual status changes in the UI.
 
 ### Content management
 
@@ -211,19 +213,29 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [x] Add an authentication lifecycle test:
   - Run `node scripts/test-admin-auth-lifecycle.mjs`.
   - Covers login, token rotation, protected access, logout, and revoked-token rejection.
-- [ ] Create shared typed API contracts for:
+- [~] Create shared typed API contracts for:
   - Paginated responses.
   - API errors.
   - Admin user, content, category, directory, and Sangha resources.
-- [ ] Consolidate duplicate root-level and `app/store/features/*` API/slice/saga files.
-- [ ] Fix current TypeScript errors in the Sangha feature and missing imports.
+  - Shared contracts now cover offset pagination, API errors, admin users, content, and experience categories.
+  - Directory and Sangha resources still need to be migrated into the shared contract layer.
+- [~] Consolidate duplicate root-level and `app/store/features/*` API/slice/saga files.
+  - Removed stale misplaced page files that were compiled as duplicate routes.
+  - Legacy root-level admin sagas/slices are lint-safe but still need a final keep/delete decision during Directory/Sangha migration.
+- [x] Fix current TypeScript errors in the Sangha feature and missing imports.
+  - Corrected Sangha model imports.
+  - Added Sangha selectors used by `/admin/sangha`.
+  - Migrated the Sangha groups page to the shared typed `Table`.
 - [x] Make the shared `Table` component generic instead of using `any`.
   - Typed accessors and custom cell renderers.
   - Stable resource-based row keys instead of array indexes.
   - Accessible caption support and semantic column headers.
   - Reusable empty state and responsive horizontal overflow.
   - Users page migrated without `any`.
-- [ ] Add server-side pagination, debounced search, filters, empty states, and retry states.
+- [~] Add server-side pagination, debounced search, filters, empty states, and retry states.
+  - Users now use backend `limit`/`offset`, debounced search, active/inactive filters, loading/error/empty states, and status confirmation.
+  - Content uses backend `limit`/`offset`, category filtering, loading/error/empty states, and delete confirmation.
+  - Directory and Sangha moderation pages still need full production UI flows.
 - [x] Complete the Content Management list UI:
   - Uses the backend `{ experiences, pagination }` contract.
   - Server-side offset pagination and category filtering.
@@ -235,7 +247,9 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Typed list/create/update Redux Saga flow.
   - Edit form, validation, request feedback, and reusable table.
   - Reversible API lifecycle test preserves original data.
-- [ ] Add confirmation dialogs for destructive and moderation actions.
+- [~] Add confirmation dialogs for destructive and moderation actions.
+  - Users status changes and content deletion require confirmation.
+  - Directory/Sangha moderation actions still need confirmation dialogs before fixture-backed enablement.
 - [ ] Add role-based navigation and route authorization.
 - [ ] Add toast feedback and normalized backend error messages.
 - [ ] Add Redux Saga tests for success, validation failure, `401`, `403`, and server errors.
@@ -255,5 +269,9 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [x] Unauthorized requests return `401`.
 - [ ] Authenticated non-admin requests return `403`.
 - [ ] Admin pages work after browser refresh and token renewal.
-- [ ] No TypeScript or ESLint errors remain in admin-related files.
-- [ ] Destructive actions cannot run without confirmation.
+- [x] No TypeScript or ESLint errors remain in admin-related files.
+  - `npx tsc --noEmit --pretty false` passes.
+  - `npm run lint` exits successfully with `0` errors; legacy unused-action warnings remain.
+- [~] Destructive actions cannot run without confirmation.
+  - Implemented for content deletion and user status changes.
+  - Remaining Directory/Sangha moderation/destructive actions are not enabled until disposable fixtures and confirmations are in place.

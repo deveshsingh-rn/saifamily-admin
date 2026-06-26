@@ -6,6 +6,18 @@ import { useRouter } from 'next/navigation';
 import { createAccountStart, selectAccountLoading, selectAccountError } from '../../store/features/account/accountSlice';
 import { selectIsAuthenticated } from '../../store/features/auth/authSlice';
 
+interface AccountFormData {
+  name: string;
+  address: string;
+  pincode: string;
+  occupation: string;
+  city: string;
+  state: string;
+  country: string;
+  language: string;
+  profileImage: File | null;
+}
+
 const CreateAccountPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
@@ -13,7 +25,7 @@ const CreateAccountPage = () => {
   const error = useSelector(selectAccountError);
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AccountFormData>({
     name: '',
     address: '',
     pincode: '',
@@ -38,8 +50,10 @@ const CreateAccountPage = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({ ...prev, profileImage: e.target.files[0] }));
+    const selectedFile = e.target.files?.[0];
+
+    if (selectedFile) {
+      setFormData((prev) => ({ ...prev, profileImage: selectedFile }));
     }
   };
 
@@ -47,11 +61,11 @@ const CreateAccountPage = () => {
     e.preventDefault();
     // Logic to handle multipart form data if a profile image is selected
     const data = new FormData();
-    Object.keys(formData).forEach(key => {
+    Object.entries(formData).forEach(([key, value]) => {
         if (key === 'profileImage' && formData.profileImage) {
             data.append(key, formData.profileImage);
-        } else {
-            data.append(key, (formData as any)[key]);
+        } else if (typeof value === 'string') {
+            data.append(key, value);
         }
     });
 

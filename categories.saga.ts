@@ -19,12 +19,15 @@ import {
 } from './categories.slice';
 import { Category, CreateCategoryPayload } from '@/category';
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Something went wrong.';
+
 function* fetchCategoriesSaga(): Generator {
   try {
     const categories = (yield call(getCategories)) as Category[];
     yield put(fetchCategoriesSuccess(categories));
-  } catch (error: any) {
-    yield put(fetchCategoriesFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchCategoriesFailure(getErrorMessage(error)));
   }
 }
 
@@ -32,8 +35,8 @@ function* addCategorySaga(action: PayloadAction<CreateCategoryPayload>): Generat
   try {
     const newCategory = (yield call(createCategory, action.payload)) as Category;
     yield put(addCategorySuccess(newCategory));
-  } catch (error: any) {
-    yield put(addCategoryFailure(error.message));
+  } catch (error: unknown) {
+    yield put(addCategoryFailure(getErrorMessage(error)));
   }
 }
 
@@ -48,8 +51,8 @@ function* updateCategorySaga(
       payload
     )) as Category;
     yield put(updateCategorySuccess(updatedCategory));
-  } catch (error: any) {
-    yield put(updateCategoryFailure(error.message));
+  } catch (error: unknown) {
+    yield put(updateCategoryFailure(getErrorMessage(error)));
   }
 }
 

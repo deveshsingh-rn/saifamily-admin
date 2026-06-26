@@ -11,13 +11,16 @@ import {
 } from './experiences.slice';
 import { Experience } from '@/experience';
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : 'Something went wrong.';
+
 function* fetchExperiencesSaga(action: PayloadAction<string | undefined>): Generator {
   try {
     const searchQuery = action.payload || '';
     const experiences = (yield call(getExperiences, searchQuery)) as Experience[];
     yield put(fetchExperiencesSuccess(experiences));
-  } catch (error: any) {
-    yield put(fetchExperiencesFailure(error.message));
+  } catch (error: unknown) {
+    yield put(fetchExperiencesFailure(getErrorMessage(error)));
   }
 }
 
@@ -28,8 +31,8 @@ function* deleteExperienceSaga(action: PayloadAction<string>): Generator {
     yield put(deleteExperienceSuccess(experienceId));
     // Optional: you could refetch the list here instead
     // yield put(fetchExperiencesStart());
-  } catch (error: any) {
-    yield put(deleteExperienceFailure(error.message));
+  } catch (error: unknown) {
+    yield put(deleteExperienceFailure(getErrorMessage(error)));
   }
 }
 
