@@ -124,14 +124,16 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
 - [~] `DELETE /api/admin/content/:id`
   - Create disposable content first.
   - Verify deletion and missing-content behavior.
+  - Frontend confirmation flow and Redux Saga integration are implemented.
 
 ### Experience category management
 
-- [~] `POST /api/admin/categories`
-  - Create a uniquely named test category.
-- [~] `PATCH /api/admin/categories/:category`
-  - Update the test category.
-  - Verify duplicate and unknown category handling.
+- [x] `POST /api/admin/categories` — HTTP `201`.
+  - Category keys are a fixed backend enum, not arbitrary slugs.
+  - Existing keys behave idempotently/upsert-like and return the category wrapper.
+- [x] `PATCH /api/admin/categories/:category` — HTTP `200`.
+  - Verified with a temporary label and restored the original label successfully.
+  - Mutation responses use `{ category: { category, label } }`.
 
 ### Directory category management
 
@@ -222,6 +224,17 @@ Use dedicated test records. Do not mutate real users, content, listings, reviews
   - Reusable empty state and responsive horizontal overflow.
   - Users page migrated without `any`.
 - [ ] Add server-side pagination, debounced search, filters, empty states, and retry states.
+- [x] Complete the Content Management list UI:
+  - Uses the backend `{ experiences, pagination }` contract.
+  - Server-side offset pagination and category filtering.
+  - Typed content, author, and engagement models.
+  - Reusable table, empty state, errors, loading feedback, and delete confirmation.
+- [x] Complete Experience Category Management:
+  - Fixed enum-aware create options.
+  - Create is disabled when all six category keys are configured.
+  - Typed list/create/update Redux Saga flow.
+  - Edit form, validation, request feedback, and reusable table.
+  - Reversible API lifecycle test preserves original data.
 - [ ] Add confirmation dialogs for destructive and moderation actions.
 - [ ] Add role-based navigation and route authorization.
 - [ ] Add toast feedback and normalized backend error messages.
